@@ -4,7 +4,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content class="page-add-record" [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">Agregar Registro</ion-title>
@@ -13,12 +13,13 @@
 
   <form (ngSubmit)="onSubmit()" #financeForm="ngForm">
     <ion-list [inset]="true">
-      <ion-item>
+      <ion-item class="rounded-input">
         <ion-label>Fecha del Registro</ion-label>
         <ion-datetime-button datetime="datetime"></ion-datetime-button>
       </ion-item>
-      <ion-item>
+      <ion-item class="rounded-input">
         <ion-input
+          class="money-input"
           label="Ganancias del Día"
           labelPlacement="stacked"
           type="number"
@@ -55,10 +56,14 @@
             <ion-row class="ion-align-items-center">
                 <ion-col size="12" size-sm="5"><ion-label>Gastos de Maíz</ion-label></ion-col>
                 <ion-col size="6" size-sm="3.5">
-                    <ion-input type="number" placeholder="Cant." (ionInput)="handleInput($event, cornBags)" [value]="cornBags()"></ion-input>
+                    <ion-item class="rounded-small" lines="none">
+                      <ion-input type="number" placeholder="Cant." (ionInput)="handleInput($event, cornBags)" [value]="cornBags()"></ion-input>
+                    </ion-item>
                 </ion-col>
                 <ion-col size="6" size-sm="3.5">
-                    <ion-input type="number" placeholder="Precio" (ionInput)="handleInput($event, cornPrice)" [value]="cornPrice()"><div slot="start">$</div></ion-input>
+                    <ion-item class="rounded-small" lines="none">
+                      <ion-input type="number" placeholder="Precio" (ionInput)="handleInput($event, cornPrice)" [value]="cornPrice()"><div slot="start">$</div></ion-input>
+                    </ion-item>
                 </ion-col>
             </ion-row>
         </ion-grid>
@@ -68,27 +73,31 @@
             <ion-row class="ion-align-items-center">
                 <ion-col size="12" size-sm="5"><ion-label>Gastos de Carbón</ion-label></ion-col>
                 <ion-col size="6" size-sm="3.5">
-                    <ion-input type="number" placeholder="Cant." (ionInput)="handleInput($event, charcoalBags)" [value]="charcoalBags()"></ion-input>
+                    <ion-item class="rounded-small" lines="none">
+                      <ion-input type="number" placeholder="Cant." (ionInput)="handleInput($event, charcoalBags)" [value]="charcoalBags()"></ion-input>
+                    </ion-item>
                 </ion-col>
                 <ion-col size="6" size-sm="3.5">
-                    <ion-input type="number" placeholder="Precio" (ionInput)="handleInput($event, charcoalPrice)" [value]="charcoalPrice()"><div slot="start">$</div></ion-input>
+                    <ion-item class="rounded-small" lines="none">
+                      <ion-input type="number" placeholder="Precio" (ionInput)="handleInput($event, charcoalPrice)" [value]="charcoalPrice()"><div slot="start">$</div></ion-input>
+                    </ion-item>
                 </ion-col>
             </ion-row>
         </ion-grid>
       </ion-item>
-      <ion-item>
+      <ion-item class="rounded-input">
         <ion-input label="Gastos Generales" labelPlacement="stacked" type="number" placeholder="Total" (ionInput)="handleInput($event, generalExpenses)" [value]="generalExpenses()"><div slot="start">$</div></ion-input>
       </ion-item>
-      <ion-item>
+      <ion-item class="rounded-input">
         <ion-input label="Gastos de Operación" labelPlacement="stacked" type="number" placeholder="Total" (ionInput)="handleInput($event, operatingExpenses)" [value]="operatingExpenses()"><div slot="start">$</div></ion-input>
       </ion-item>
-      <ion-item>
+      <ion-item class="rounded-input">
         <ion-input label="Gasto de los Trabajadores" labelPlacement="stacked" type="number" placeholder="Total" (ionInput)="handleInput($event, workerExpenses)" [value]="workerExpenses()"><div slot="start">$</div></ion-input>
       </ion-item>
-      <ion-item>
+      <ion-item class="rounded-input">
         <ion-input label="Gasto del Arriendo" labelPlacement="stacked" type="number" placeholder="Total" (ionInput)="handleInput($event, rentExpenses)" [value]="rentExpenses()"><div slot="start">$</div></ion-input>
       </ion-item>
-      <ion-item>
+      <ion-item class="rounded-input">
         <ion-input label="Gastos de las Motos" labelPlacement="stacked" type="number" placeholder="Total" (ionInput)="handleInput($event, motorcycleExpenses)" [value]="motorcycleExpenses()"><div slot="start">$</div></ion-input>
       </ion-item>
     </ion-list>
