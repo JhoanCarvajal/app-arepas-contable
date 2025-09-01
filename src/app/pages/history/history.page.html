@@ -1,0 +1,49 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Historial</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Historial</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  @if (history().length > 0) {
+    <ion-list>
+      @for (item of history(); track $index) {
+        <ion-card class="ion-margin-vertical">
+          <ion-card-header>
+            <ion-card-subtitle>{{ item.date }}</ion-card-subtitle>
+            <ion-card-title 
+              [color]="item.netProfit >= 0 ? 'success' : 'danger'">
+              Beneficio Neto: ${{ item.netProfit | number:'1.2-2' }}
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item lines="none">
+              <ion-icon name="cash-outline" slot="start" color="success"></ion-icon>
+              <ion-label>Ganancias</ion-label>
+              <ion-text slot="end" color="medium">${{ item.earnings | number:'1.2-2' }}</ion-text>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-icon name="wallet-outline" slot="start" color="danger"></ion-icon>
+              <ion-label>Gastos Totales</ion-label>
+              <ion-text slot="end" color="medium">${{ item.totalExpenses | number:'1.2-2' }}</ion-text>
+            </ion-item>
+          </ion-card-content>
+        </ion-card>
+      }
+    </ion-list>
+  } @else {
+    <div class="ion-text-center ion-padding-top" style="margin-top: 30vh;">
+      <h3>Sin registros</h3>
+      <p class="ion-padding-horizontal">Comienza por agregar tu primer registro financiero.</p>
+      <ion-button routerLink="/tabs/add" class="ion-margin-top">
+        Agregar Registro
+      </ion-button>
+    </div>
+  }
+</ion-content>
