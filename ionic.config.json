@@ -1,0 +1,7 @@
+{
+  "name": "registro-de-ganancias-damian/",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
