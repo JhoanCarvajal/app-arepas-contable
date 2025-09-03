@@ -103,6 +103,9 @@ export class AddRecordPage implements OnInit, OnDestroy {
   isEdit = signal(false);
   editingCreatedAt: string | null = null;
 
+  // Nuevo: guardar id numérico del registro en edición
+  editingId: number | null = null;
+
   private routeSub?: Subscription;
   private navEndSub?: Subscription;
 
@@ -111,7 +114,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
     this.routeSub = this.route.queryParams.subscribe(params => {
       const idFromQuery = params['id'];
       if (idFromQuery) {
-        if (this.editingCreatedAt !== idFromQuery) {
+        if (this.editingId !== idFromQuery) {
           this.loadSubmissionForEdit(idFromQuery);
         }
       } else {
@@ -119,6 +122,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
         if (this.isEdit()) {
           this.isEdit.set(false);
           this.editingCreatedAt = null;
+          this.editingId = null; // <-- limpiar id de edición
           this.resetForm();
         }
       }
@@ -127,7 +131,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
     // También detectar navigation state (router.navigate(..., { state })) aunque queryParams no cambie
     this.navEndSub = this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
       const stateId = (history.state as any)?.id;
-      if (stateId && this.editingCreatedAt !== stateId) {
+      if (stateId && this.editingId !== stateId) {
         this.loadSubmissionForEdit(stateId);
       }
     });
@@ -138,17 +142,19 @@ export class AddRecordPage implements OnInit, OnDestroy {
     this.navEndSub?.unsubscribe();
   }
 
-  private loadSubmissionForEdit(createdAt: string): void {
-    const sub = this.financeService.getSubmission(createdAt);
+  private loadSubmissionForEdit(submissionId: string): void {
+    const sub = this.financeService.getSubmissionById(Number(submissionId));
     if (!sub) return;
 
     this.isEdit.set(true);
     this.editingCreatedAt = sub.createdAt;
+    this.editingId = sub.id ?? null; // <-- set editing id
 
     // Mapear valores al formulario (signals)
-    // fecha: guardamos la ISO en recordDate para el datetime control
-    // Convertimos la `date` de presentación si hace falta, pero preferimos usar createdAt como id
-    this.recordDate.set(new Date(sub.createdAt).toISOString());
+    console.log('Cargando para edición el registro:', sub.createdAt);
+    this.recordDate.set(sub.createdAt);
+    // this.recordDate.set(new Date(sub.createdAt).toISOString());
+    console.log('Fecha seteada en el formulario:', this.recordDate());
 
     this.dailyEarnings.set(sub.earnings ?? null);
     this.generalExpenses.set(sub.generalExpenses ?? null);
@@ -168,11 +174,13 @@ export class AddRecordPage implements OnInit, OnDestroy {
     const earnings = this.dailyEarnings() ?? 0;
     if (this.dailyEarnings() !== null && earnings >= 0) {
       const submissionBase: Submission = {
-        // Si estamos en edición preservamos createdAt; en creación lo añadirá addSubmission
-        createdAt: this.isEdit() && this.editingCreatedAt ? this.editingCreatedAt : new Date().toISOString(),
+        // Si estamos en edición preservamos createdAt e id; en creación el servicio asigna id
+        // createdAt: this.isEdit() && this.editingCreatedAt ? this.editingCreatedAt : new Date().toISOString(),
+        id: this.isEdit() ? this.editingId ?? undefined : undefined,
         date: new Date(this.recordDate()).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }),
         earnings: earnings,
         // Detalle completo para permitir edición posterior
+        createdAt: this.recordDate(),
         generalExpenses: this.generalExpenses(),
         operatingExpenses: this.operatingExpenses(),
         workerExpenses: this.workerExpenses(),
@@ -192,7 +200,6 @@ export class AddRecordPage implements OnInit, OnDestroy {
       if (this.isEdit()) {
         this.financeService.updateSubmission(submissionBase);
       } else {
-        // addSubmission volverá a crear createdAt
         this.financeService.addSubmission(submissionBase);
       }
 
@@ -218,6 +225,11 @@ export class AddRecordPage implements OnInit, OnDestroy {
     this.charcoalPrice.set(null);
     
     this.recordDate.set(this.getTodayISOString());
+
+    // Reset edición
+    this.isEdit.set(false);
+    this.editingCreatedAt = null;
+    this.editingId = null; // <-- limpiar id de edición
   }
 
   handleInput(event: any, signalToUpdate: WritableSignal<number | null>): void {

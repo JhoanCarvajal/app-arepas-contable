@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { 
@@ -45,11 +45,24 @@ import { FinanceService } from '../../services/finance.service';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HistoryPage {
+export class HistoryPage implements OnInit {
   financeService = inject(FinanceService);
   history = this.financeService.history;
 
   constructor() {
     addIcons({ cashOutline, walletOutline });
+  }
+
+  ngOnInit() {
+    // verificar hay algun registro sin id y asignarselo
+    const updatedHistory = this.history().map(item => {
+      if (item.id === undefined) {
+        return { ...item, id: Math.floor(Math.random() * 1_000_000_000) };
+      }
+      return item;
+    });
+    this.financeService.history.set(updatedHistory);
+    console.log('Registros actualizados con id donde faltaba:', updatedHistory);
+    this.financeService['saveToLocalStorage'](); // guardar cambios
   }
 }

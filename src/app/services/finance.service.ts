@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 
 export interface Submission {
+  id?: number; // <-- nuevo id numérico
   createdAt: string;
   date: string;
   earnings: number;
@@ -32,21 +33,37 @@ export class FinanceService {
     this.loadFromLocalStorage();
   }
 
+  // Genera un id numérico aleatorio y asegura que no exista colisión
+  private generateUniqueId(): number {
+    let id: number;
+    do {
+      id = Math.floor(Math.random() * 1_000_000_000);
+    } while (this.history().some(h => h.id === id));
+    return id;
+  }
+
   addSubmission(sub: Submission) {
-    const s = { ...sub, createdAt: new Date().toISOString() };
+    const s: Submission = {
+      ...sub,
+      id: sub.id ?? this.generateUniqueId(),
+    };
     const updated = [s, ...this.history()];
     this.history.set(updated);
     this.saveToLocalStorage();
   }
 
-  // Obtener un registro por createdAt (id)
+  // Obtener un registro por createdAt (id histórico)
   getSubmission(createdAt: string): Submission | undefined {
     return this.history().find(h => h.createdAt === createdAt);
   }
 
-  // Actualizar un registro existente (por createdAt)
+  getSubmissionById(id: number): Submission | undefined {
+    return this.history().find(h => h.id === id);
+  }
+
+  // Actualizar un registro existente (por createdAt o id)
   updateSubmission(updated: Submission) {
-    const idx = this.history().findIndex(h => h.createdAt === updated.createdAt);
+    const idx = this.history().findIndex(h => (updated.id !== undefined && h.id === updated.id));
     if (idx === -1) return;
     const copy = [...this.history()];
     copy[idx] = { ...updated };
