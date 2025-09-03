@@ -1,5 +1,7 @@
-import { Component, signal, ChangeDetectionStrategy, computed, WritableSignal, inject, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, signal, ChangeDetectionStrategy, computed, WritableSignal, inject, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { 
@@ -52,11 +54,12 @@ import { FinanceService, Submission } from '../../services/finance.service';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AddRecordPage {
+export class AddRecordPage implements OnInit, OnDestroy {
   @ViewChild('financeForm') financeForm?: NgForm;
 
   private financeService = inject(FinanceService);
   private router: Router = inject(Router);
+  private route: ActivatedRoute = inject(ActivatedRoute);
 
   private getTodayISOString(): string {
     return new Date().toISOString();
@@ -96,18 +99,103 @@ export class AddRecordPage {
 
   netProfit = computed(() => (this.dailyEarnings() ?? 0) - this.totalExpenses());
 
+  // Nuevo: flags para edición
+  isEdit = signal(false);
+  editingCreatedAt: string | null = null;
+
+  private routeSub?: Subscription;
+  private navEndSub?: Subscription;
+
+  ngOnInit(): void {
+    // Suscribirse a cambios en queryParams (se emite aunque el componente ya exista)
+    this.routeSub = this.route.queryParams.subscribe(params => {
+      const idFromQuery = params['id'];
+      if (idFromQuery) {
+        if (this.editingCreatedAt !== idFromQuery) {
+          this.loadSubmissionForEdit(idFromQuery);
+        }
+      } else {
+        // Si navegamos sin id y estábamos en modo edición, salir del modo edición
+        if (this.isEdit()) {
+          this.isEdit.set(false);
+          this.editingCreatedAt = null;
+          this.resetForm();
+        }
+      }
+    });
+
+    // También detectar navigation state (router.navigate(..., { state })) aunque queryParams no cambie
+    this.navEndSub = this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
+      const stateId = (history.state as any)?.id;
+      if (stateId && this.editingCreatedAt !== stateId) {
+        this.loadSubmissionForEdit(stateId);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.routeSub?.unsubscribe();
+    this.navEndSub?.unsubscribe();
+  }
+
+  private loadSubmissionForEdit(createdAt: string): void {
+    const sub = this.financeService.getSubmission(createdAt);
+    if (!sub) return;
+
+    this.isEdit.set(true);
+    this.editingCreatedAt = sub.createdAt;
+
+    // Mapear valores al formulario (signals)
+    // fecha: guardamos la ISO en recordDate para el datetime control
+    // Convertimos la `date` de presentación si hace falta, pero preferimos usar createdAt como id
+    this.recordDate.set(new Date(sub.createdAt).toISOString());
+
+    this.dailyEarnings.set(sub.earnings ?? null);
+    this.generalExpenses.set(sub.generalExpenses ?? null);
+    this.operatingExpenses.set(sub.operatingExpenses ?? null);
+    this.workerExpenses.set(sub.workerExpenses ?? null);
+    this.rentExpenses.set(sub.rentExpenses ?? null);
+    this.motorcycleExpenses.set(sub.motorcycleExpenses ?? null);
+
+    this.cornBags.set(sub.cornBags ?? null);
+    this.cornPrice.set(sub.cornPrice ?? null);
+
+    this.charcoalBags.set(sub.charcoalBags ?? null);
+    this.charcoalPrice.set(sub.charcoalPrice ?? null);
+  }
+
   onSubmit(): void {
     const earnings = this.dailyEarnings() ?? 0;
     if (this.dailyEarnings() !== null && earnings >= 0) {
-      const newSubmission: Submission = {
-        createdAt: new Date().toISOString(),
+      const submissionBase: Submission = {
+        // Si estamos en edición preservamos createdAt; en creación lo añadirá addSubmission
+        createdAt: this.isEdit() && this.editingCreatedAt ? this.editingCreatedAt : new Date().toISOString(),
         date: new Date(this.recordDate()).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }),
         earnings: earnings,
+        // Detalle completo para permitir edición posterior
+        generalExpenses: this.generalExpenses(),
+        operatingExpenses: this.operatingExpenses(),
+        workerExpenses: this.workerExpenses(),
+        rentExpenses: this.rentExpenses(),
+        motorcycleExpenses: this.motorcycleExpenses(),
+
+        cornBags: this.cornBags(),
+        cornPrice: this.cornPrice(),
+
+        charcoalBags: this.charcoalBags(),
+        charcoalPrice: this.charcoalPrice(),
+
         totalExpenses: this.totalExpenses(),
         netProfit: this.netProfit(),
       };
 
-      this.financeService.addSubmission(newSubmission);
+      if (this.isEdit()) {
+        this.financeService.updateSubmission(submissionBase);
+      } else {
+        // addSubmission volverá a crear createdAt
+        this.financeService.addSubmission(submissionBase);
+      }
+
       this.resetForm();
       this.router.navigate(['/tabs/history']);
     }

@@ -34,6 +34,17 @@
               <ion-text slot="end" color="medium">${{ item.totalExpenses | number:'1.2-2' }}</ion-text>
             </ion-item>
           </ion-card-content>
+
+          <!-- Nuevo: botón Editar que envía el id por queryParams -->
+          <ion-card-content class="ion-padding-horizontal">
+            <ion-button
+              fill="outline"
+              size="small"
+              [routerLink]="['/tabs/add']"
+              [queryParams]="{ id: item.createdAt }">
+              Editar
+            </ion-button>
+          </ion-card-content>
         </ion-card>
       }
     </ion-list>

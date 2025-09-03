@@ -4,7 +4,13 @@
       <ion-icon name="archive-outline" aria-hidden="true"></ion-icon>
       <ion-label>Historial</ion-label>
     </ion-tab-button>
-    <ion-tab-button tab="add" href="/tabs/add">
+
+    <!-- Botón Agregar: usa routerLink y limpia queryParams y state -->
+    <ion-tab-button
+      tab="add"
+      [routerLink]="['/tabs/add']"
+      [queryParams]="{}"
+      [state]="{}">
       <ion-icon name="add-circle-outline" aria-hidden="true"></ion-icon>
       <ion-label>Agregar</ion-label>
     </ion-tab-button>
