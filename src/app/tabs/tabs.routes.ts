@@ -17,6 +17,11 @@ export const routes: Routes = [
           import('../pages/add-record/add-record.page').then(m => m.AddRecordPage),
       },
       {
+        path: 'settings',
+        loadComponent: () =>
+          import('../pages/app-settings/app-settings.page').then(m => m.AppSettingsPage),
+      },
+      {
         path: '',
         redirectTo: 'history',
         pathMatch: 'full',
