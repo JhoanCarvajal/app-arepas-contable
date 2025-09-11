@@ -1,7 +1,7 @@
 import { Component, EnvironmentInjector, inject } from '@angular/core';
 import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { archiveOutline, addCircleOutline } from 'ionicons/icons';
+import { archiveOutline, addCircleOutline, walletOutline, settingsOutline } from 'ionicons/icons';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -14,6 +14,6 @@ export class TabsPage {
   public environmentInjector = inject(EnvironmentInjector);
 
   constructor() {
-    addIcons({ archiveOutline, addCircleOutline });
+    addIcons({ archiveOutline, addCircleOutline, walletOutline, settingsOutline });
   }
 }

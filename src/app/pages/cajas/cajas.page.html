@@ -1,0 +1,19 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Cajas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-list>
+    <ng-container *ngFor="let box of boxes">
+      <ion-item lines="full">
+        <ion-icon [name]="box.icon" slot="start"></ion-icon>
+        <ion-label>{{ box.label }}</ion-label>
+        <ion-text slot="end">
+          <h2 class="ion-no-margin">${{ totalFor(box.key)() | number:'1.2-2' }}</h2>
+        </ion-text>
+      </ion-item>
+    </ng-container>
+  </ion-list>
+</ion-content>
