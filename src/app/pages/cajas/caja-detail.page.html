@@ -1,0 +1,26 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <!-- <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/cajas"></ion-back-button>
+    </ion-buttons> -->
+    <ion-title>Detalle de Caja</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div style="height: 260px;">
+    <canvas #chartCanvas></canvas>
+  </div>
+
+  <ion-list>
+    <ion-item lines="full" *ngFor="let point of serie()">
+      <ion-label>
+        <h3>{{ point.dateLabel }}</h3>
+        <p class="ion-text-wrap">Valor: ${{ point.value | number:'1.2-2' }}</p>
+      </ion-label>
+    </ion-item>
+    <ion-item *ngIf="serie().length === 0" lines="none">
+      <ion-label>No hay movimientos para esta caja.</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

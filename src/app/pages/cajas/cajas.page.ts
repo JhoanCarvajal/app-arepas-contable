@@ -6,12 +6,13 @@ import { IonList, IonItem, IonLabel, IonIcon, IonText,
   IonToolbar,
   IonHeader, } from '@ionic/angular/standalone';
 import { FinanceService } from '../../services/finance.service';
+import { RouterModule } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { cubeOutline, sparklesOutline, peopleOutline, businessOutline, bicycleOutline } from 'ionicons/icons';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, IonList, IonItem, IonLabel, IonIcon, IonText, IonContent, IonTitle, IonToolbar, IonHeader],
+  imports: [CommonModule, IonList, IonItem, IonLabel, IonIcon, IonText, IonContent, IonTitle, IonToolbar, IonHeader, RouterModule],
   templateUrl: 'cajas.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

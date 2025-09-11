@@ -22,6 +22,11 @@ export const routes: Routes = [
           import('../pages/cajas/cajas.page').then(m => m.CajasPage),
       },
       {
+        path: 'cajas/:key',
+        loadComponent: () =>
+          import('../pages/cajas/caja-detail.page').then(m => m.CajaDetailPage),
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('../pages/app-settings/app-settings.page').then(m => m.AppSettingsPage),

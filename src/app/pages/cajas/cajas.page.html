@@ -7,7 +7,8 @@
 <ion-content [fullscreen]="true" class="ion-padding">
   <ion-list>
     <ng-container *ngFor="let box of boxes">
-      <ion-item lines="full">
+      <!-- Navegar hacia /tabs/cajas/{key} -->
+      <ion-item lines="full" [routerLink]="['/tabs/cajas', box.key]">
         <ion-icon [name]="box.icon" slot="start"></ion-icon>
         <ion-label>{{ box.label }}</ion-label>
         <ion-text slot="end">
