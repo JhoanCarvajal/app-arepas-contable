@@ -1,26 +1,30 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <!-- <ion-buttons slot="start">
+    <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/cajas"></ion-back-button>
-    </ion-buttons> -->
-    <ion-title>Detalle de Caja</ion-title>
+    </ion-buttons>
+    <ion-title>{{ getBoxName() }}</ion-title>
+    <ion-title slot="end">${{ getTotal() | number:'1.0-0' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div style="height: 260px;">
+  <div style="height:260px">
     <canvas #chartCanvas></canvas>
   </div>
 
   <ion-list>
-    <ion-item lines="full" *ngFor="let point of serie()">
+    <ion-item lines="full" *ngFor="let r of series()">
       <ion-label>
-        <h3>{{ point.dateLabel }}</h3>
-        <p class="ion-text-wrap">Valor: ${{ point.value | number:'1.2-2' }}</p>
+        <h3>{{ r.date }}</h3>
+        <p>Origen: {{ r.origin }}</p>
+        <p class="ion-text-wrap">Total: ${{ r.total | number:'1.0-0' }}</p>
       </ion-label>
+      <ion-button fill="clear" color="danger" slot="end" (click)="removeRecord(r.id)">Eliminar</ion-button>
     </ion-item>
-    <ion-item *ngIf="serie().length === 0" lines="none">
-      <ion-label>No hay movimientos para esta caja.</ion-label>
+
+    <ion-item *ngIf="series().length === 0" lines="none">
+      <ion-label>No hay movimientos en esta caja.</ion-label>
     </ion-item>
   </ion-list>
 </ion-content>

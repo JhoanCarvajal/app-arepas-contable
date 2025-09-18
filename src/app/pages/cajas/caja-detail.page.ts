@@ -1,87 +1,57 @@
 import { Component, ChangeDetectionStrategy, inject, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonText, IonButtons, IonBackButton } from '@ionic/angular/standalone';
-
-import { ActivatedRoute } from '@angular/router';
-import { FinanceService, Submission } from '../../services/finance.service';
-import { computed, effect } from '@angular/core';
+import { IonicModule } from '@ionic/angular';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import Chart from 'chart.js/auto';
+import { BoxesService, Box, BoxRecord } from '../../services/boxes.service';
+import { computed, effect } from '@angular/core';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonItem, IonLabel, IonText, IonButtons, IonBackButton],
-  templateUrl: 'caja-detail.page.html',
+  imports: [CommonModule, IonicModule, RouterModule, IonicModule],
+  templateUrl: './caja-detail.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CajaDetailPage implements AfterViewInit {
   private route = inject(ActivatedRoute);
-  private finance = inject(FinanceService);
+  private boxesService = inject(BoxesService);
 
   @ViewChild('chartCanvas', { static: false }) chartCanvas?: ElementRef<HTMLCanvasElement>;
   chart?: Chart;
 
-  // key de la caja (maiz, carbon, operaciones, etc.)
-  key = this.route.snapshot.paramMap.get('key') || '';
+  // obtener id desde params (ruta /tabs/cajas/:id)
+  boxId = Number(this.route.snapshot.paramMap.get('id'));
 
-  // serie computada: array de {label, value, createdAt}
-  serie = computed(() => {
-    const items = this.finance.history()
-      .map((s: Submission) => {
-        let value = 0;
-        switch (this.key) {
-          case 'maiz':
-            value = (s.cornBags ?? 0) * (s.cornPrice ?? 0);
-            break;
-          case 'carbon':
-            value = (s.charcoalBags ?? 0) * (s.charcoalPrice ?? 0);
-            break;
-          case 'general':
-            value = s.generalExpenses ?? 0;
-            break;
-          case 'operaciones':
-            value = s.operatingExpenses ?? 0;
-            break;
-          case 'trabajadores':
-            value = s.workerExpenses ?? 0;
-            break;
-          case 'arriendo':
-            value = s.rentExpenses ?? 0;
-            break;
-          case 'motos':
-            value = s.motorcycleExpenses ?? 0;
-            break;
-          default:
-            value = 0;
-        }
-        return { createdAt: s.createdAt, dateLabel: s.date ?? new Date(s.createdAt).toLocaleDateString(), value };
-      })
-      .filter(x => x.value !== 0)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    return items;
+  // caja reactiva
+  box = computed<Box | undefined>(() => this.boxesService.getById(this.boxId));
+
+  // records de la caja (ordenados por createdAt asc)
+  series = computed(() => {
+    const b = this.box();
+    if (!b) return [] as BoxRecord[];
+    return [...b.records].sort((a, z) => new Date(a.createdAt).getTime() - new Date(z.createdAt).getTime());
   });
 
   ngAfterViewInit(): void {
-    // Crear chart al montar y re-actualizar cuando cambien los datos
+    console.log(this.route.snapshot.paramMap.get('id'))
+    // si no existe la caja, redirigir a /tabs/cajas
+    if (!this.box()) {
+      window.alert(`Caja no encontrada ${this.boxId}`);
+      window.location.href = '/tabs/cajas';
+    }
+
     const build = () => {
-      const items = this.serie();
-      const labels = items.map(i => i.dateLabel);
-      const data = items.map(i => i.value);
+      const items = this.series();
+      const labels = items.map(i => i.date);
+      const data = items.map(i => i.total ?? 0);
 
       if (!this.chartCanvas) return;
       const ctx = this.chartCanvas.nativeElement.getContext('2d');
       if (!ctx) return;
 
       if (this.chart) {
-        // actualizar dataset
         this.chart.data.labels = labels;
-        this.chart.data.datasets = [{
-          label: this.getLabel(),
-          data,
-          fill: false,
-          borderColor: '#3b82f6',
-          backgroundColor: '#3b82f6',
-          tension: 0.2,
-        }];
+        this.chart.data.datasets = [{ label: this.box()?.name ?? 'Movimientos', data, fill: false, borderColor: '#3b82f6', backgroundColor: '#3b82f6', tension: 0.2 }];
         this.chart.update();
         return;
       }
@@ -91,7 +61,7 @@ export class CajaDetailPage implements AfterViewInit {
         data: {
           labels,
           datasets: [{
-            label: this.getLabel(),
+            label: this.box()?.name ?? 'Movimientos',
             data,
             fill: false,
             borderColor: '#3b82f6',
@@ -102,27 +72,36 @@ export class CajaDetailPage implements AfterViewInit {
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          scales: {
-            x: { display: true },
-            y: { display: true, beginAtZero: true },
-          },
+          scales: { x: { display: true }, y: { display: true, beginAtZero: true } },
         },
       });
     };
 
     build();
-
-    // efecto reactivo: rebuild cada vez que cambie history()
+    // efecto reactivo: reconstruir cuando cambien los records
     // effect(() => {
-    //   // acceder a serie() dentro del effect para que se registre la dependencia
-    //   this.serie();
+    //   // leer series para registrar dependencia
+    //   this.series();
     //   build();
     // });
   }
 
-  getLabel() {
-    // etiqueta bonita para la gráfica
-    const box = this.key.charAt(0).toUpperCase() + this.key.slice(1);
-    return `Movimiento - ${box}`;
+  // helpers para template
+  getBoxName() {
+    return this.box()?.name ?? 'Caja';
+  }
+
+  getTotal() {
+    return this.box()?.total ?? 0;
+  }
+
+  // eliminar record
+  removeRecord(recordId: number) {
+    const b = this.box();
+    if (!b) return;
+    b.records = b.records.filter(r => r.id !== recordId);
+    // recalcular total opcional (sum records)
+    b.total = b.records.reduce((acc, r) => acc + (r.total ?? 0), 0);
+    this.boxesService.updateBox(b);
   }
 }

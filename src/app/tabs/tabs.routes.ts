@@ -22,7 +22,7 @@ export const routes: Routes = [
           import('../pages/cajas/cajas.page').then(m => m.CajasPage),
       },
       {
-        path: 'cajas/:key',
+        path: 'cajas/:id',
         loadComponent: () =>
           import('../pages/cajas/caja-detail.page').then(m => m.CajaDetailPage),
       },

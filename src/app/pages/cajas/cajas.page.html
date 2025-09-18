@@ -4,17 +4,44 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-  <ion-list>
-    <ng-container *ngFor="let box of boxes">
-      <!-- Navegar hacia /tabs/cajas/{key} -->
-      <ion-item lines="full" [routerLink]="['/tabs/cajas', box.key]">
-        <ion-icon [name]="box.icon" slot="start"></ion-icon>
-        <ion-label>{{ box.label }}</ion-label>
-        <ion-text slot="end">
-          <h2 class="ion-no-margin">${{ totalFor(box.key)() | number:'1.2-2' }}</h2>
-        </ion-text>
+<ion-content class="ion-padding">
+  <!-- Formulario simple para crear caja -->
+  <ion-card class="ion-margin-bottom">
+    <ion-card-header>
+      <ion-card-title>Nueva caja</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="stacked">Nombre</ion-label>
+        <ion-input [(ngModel)]="newName" placeholder="Ej: Caja de Maíz"></ion-input>
       </ion-item>
-    </ng-container>
+
+      <ion-item>
+        <ion-label position="stacked">Ícono (nombre)</ion-label>
+        <ion-input [(ngModel)]="newIcon" placeholder="cube-outline"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Total inicial (opcional)</ion-label>
+        <ion-input type="number" [(ngModel)]="newTotal" placeholder="0"></ion-input>
+      </ion-item>
+
+      <div class="ion-margin-top">
+        <ion-button expand="block" (click)="createBox()">Crear caja</ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list>
+    <ion-item *ngFor="let box of boxes" [routerLink]="['/tabs/cajas', box.id]">
+      <ion-icon [name]="box.icon" slot="start"></ion-icon>
+      <ion-label>
+        <h3>{{ box.name }}</h3>
+        <p class="ion-text-wrap">Creada: {{ box.createdAt | date:'mediumDate' }}</p>
+      </ion-label>
+      <ion-text slot="end">
+        <h3 class="ion-no-margin">${{ box.total | number:'1.0-0' }}</h3>
+      </ion-text>
+    </ion-item>
   </ion-list>
 </ion-content>

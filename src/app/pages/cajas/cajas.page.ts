@@ -1,62 +1,45 @@
-import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonList, IonItem, IonLabel, IonIcon, IonText,
-  IonContent,
-  IonTitle,
-  IonToolbar,
-  IonHeader, } from '@ionic/angular/standalone';
-import { FinanceService } from '../../services/finance.service';
+import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
-import { addIcons } from 'ionicons';
-import { cubeOutline, sparklesOutline, peopleOutline, businessOutline, bicycleOutline } from 'ionicons/icons';
+import { BoxesService } from '../../services/boxes.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, IonList, IonItem, IonLabel, IonIcon, IonText, IonContent, IonTitle, IonToolbar, IonHeader, RouterModule],
+  imports: [CommonModule, IonicModule, RouterModule, FormsModule],
   templateUrl: 'cajas.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CajasPage {
-  private finance = inject(FinanceService);
+  private boxesService = inject(BoxesService);
 
-  // definición de cajas con clave y etiqueta e icono
-  boxes = [
-    { key: 'maiz', label: 'Caja de Maíz', icon: 'cube-outline' },
-    { key: 'carbon', label: 'Caja de Carbón', icon: 'sparkles-outline' },
-    // { key: 'general', label: 'Caja General', icon: 'layers-outline' },
-    // { key: 'operaciones', label: 'Caja de Operaciones', icon: 'construct-outline' },
-    { key: 'trabajadores', label: 'Caja de Trabajadores', icon: 'people-outline' },
-    { key: 'arriendo', label: 'Caja de Arriendo', icon: 'business-outline' },
-    { key: 'motos', label: 'Caja de Motos', icon: 'bicycle-outline' },
-  ];
+  // campos del formulario simple
+  newName = '';
+  newIcon = 'cube-outline';
+  newTotal: number | null = null;
 
-  constructor() {
-    addIcons({ cubeOutline, sparklesOutline, peopleOutline, businessOutline, bicycleOutline });
+  // getter para usar en template
+  get boxes() {
+    return this.boxesService.getAll();
   }
 
-  // calculamos el total por caja leyendo todos los registros en history()
-  totalFor = (key: string) =>
-    computed(() => {
-      const items = this.finance.history();
-      return items.reduce((acc, s) => {
-        switch (key) {
-          case 'maiz':
-            return acc + ((s.cornBags ?? 0) * (s.cornPrice ?? 0));
-          case 'carbon':
-            return acc + ((s.charcoalBags ?? 0) * (s.charcoalPrice ?? 0));
-        //   case 'general':
-        //     return acc + (s.generalExpenses ?? 0);
-        //   case 'operaciones':
-        //     return acc + (s.operatingExpenses ?? 0);
-          case 'trabajadores':
-            return acc + (s.workerExpenses ?? 0);
-          case 'arriendo':
-            return acc + (s.rentExpenses ?? 0);
-          case 'motos':
-            return acc + (s.motorcycleExpenses ?? 0);
-          default:
-            return acc;
-        }
-      }, 0);
+  createBox() {
+    const name = (this.newName || '').trim();
+    if (!name) return;
+    this.boxesService.addBox({
+      name,
+      icon: this.newIcon,
+      total: this.newTotal ?? 0,
     });
+    // reset form
+    this.newName = '';
+    this.newIcon = 'cube-outline';
+    this.newTotal = null;
+  }
+
+  deleteBox(id: number) {
+    if (!confirm('Eliminar esta caja?')) return;
+    this.boxesService.removeBox(id);
+  }
 }
