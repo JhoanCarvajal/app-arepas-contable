@@ -13,6 +13,24 @@
     <canvas #chartCanvas></canvas>
   </div>
 
+  <!-- botones para agregar ingreso/egreso -->
+  <div class="ion-padding-vertical">
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-button expand="block" color="success" (click)="openAddRecord('ingreso')">
+            + Agregar ingreso
+          </ion-button>
+        </ion-col>
+        <ion-col>
+          <ion-button expand="block" color="danger" (click)="openAddRecord('egreso')">
+            - Agregar egreso
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
   <ion-list>
     <ion-item lines="full" *ngFor="let r of series()">
       <ion-label>

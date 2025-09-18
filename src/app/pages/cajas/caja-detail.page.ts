@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, AlertController, ToastController } from '@ionic/angular';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import Chart from 'chart.js/auto';
 import { BoxesService, Box, BoxRecord } from '../../services/boxes.service';
@@ -8,13 +8,15 @@ import { computed, effect } from '@angular/core';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, IonicModule],
+  imports: [CommonModule, IonicModule, RouterModule],
   templateUrl: './caja-detail.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CajaDetailPage implements AfterViewInit {
   private route = inject(ActivatedRoute);
   private boxesService = inject(BoxesService);
+  private alertCtrl = inject(AlertController);
+  private toastCtrl = inject(ToastController);
 
   @ViewChild('chartCanvas', { static: false }) chartCanvas?: ElementRef<HTMLCanvasElement>;
   chart?: Chart;
@@ -103,5 +105,49 @@ export class CajaDetailPage implements AfterViewInit {
     // recalcular total opcional (sum records)
     b.total = b.records.reduce((acc, r) => acc + (r.total ?? 0), 0);
     this.boxesService.updateBox(b);
+  }
+
+  async openAddRecord(type: 'ingreso' | 'egreso') {
+    const header = type === 'ingreso' ? 'Agregar ingreso' : 'Agregar egreso';
+    const defaultDate = new Date().toISOString().slice(0, 10); // yyyy-mm-dd for date input
+
+    const alert = await this.alertCtrl.create({
+      header,
+      inputs: [
+        { name: 'date', type: 'date', value: defaultDate, label: 'Fecha' },
+        { name: 'quantity', type: 'number', placeholder: 'Cantidad (opcional)' },
+        { name: 'price', type: 'number', placeholder: 'Precio unitario (opcional)' },
+        { name: 'total', type: 'number', placeholder: 'Total (si lo especificas se usará)' },
+        { name: 'note', type: 'text', placeholder: 'Nota (opcional)' },
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Agregar',
+          handler: (data: any) => {
+            const qty = Number(data.quantity) || 0;
+            const price = Number(data.price) || 0;
+            let total = data.total !== undefined && data.total !== '' ? Number(data.total) : (qty * price);
+            if (isNaN(total)) total = 0;
+            if (type === 'egreso') total = -Math.abs(total); // egreso como valor negativo para restar del total
+
+            const recordPartial = {
+              date: data.date ? new Date(data.date).toLocaleDateString() : new Date().toLocaleDateString(),
+              origin: 'manual',
+              quantity: qty || undefined,
+              price: price || undefined,
+              total,
+              extraFields: { note: data.note ?? null },
+            };
+
+            this.boxesService.addRecordToBox(this.boxId, recordPartial);
+
+            this.toastCtrl.create({ message: `${header} agregada`, duration: 1400 }).then(t => t.present());
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 }
