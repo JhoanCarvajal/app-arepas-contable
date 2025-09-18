@@ -4,6 +4,8 @@ import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 import { BoxesService } from '../../services/boxes.service';
 import { FormsModule } from '@angular/forms';
+import { addIcons } from 'ionicons';
+import { cubeOutline, trashOutline } from 'ionicons/icons';
 
 @Component({
   standalone: true,
@@ -18,6 +20,10 @@ export class CajasPage {
   newName = '';
   newIcon = 'cube-outline';
   newTotal: number | null = null;
+
+  constructor() {
+    addIcons({ cubeOutline, trashOutline });
+  }
 
   // getter para usar en template
   get boxes() {

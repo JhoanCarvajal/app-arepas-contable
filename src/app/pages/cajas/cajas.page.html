@@ -42,6 +42,15 @@
       <ion-text slot="end">
         <h3 class="ion-no-margin">${{ box.total | number:'1.0-0' }}</h3>
       </ion-text>
+
+      <!-- Botón eliminar: evita la navegación con stopPropagation -->
+      <ion-button
+        slot="end"
+        color="danger"
+        fill="clear"
+        (click)="$event.stopPropagation(); deleteBox(box.id)">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
     </ion-item>
   </ion-list>
 </ion-content>
