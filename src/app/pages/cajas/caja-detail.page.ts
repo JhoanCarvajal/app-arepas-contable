@@ -1,10 +1,11 @@
 import { Component, ChangeDetectionStrategy, inject, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, AlertController, ToastController } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import Chart from 'chart.js/auto';
 import { BoxesService, Box, BoxRecord } from '../../services/boxes.service';
 import { computed, effect } from '@angular/core';
+import { ToastController, AlertController } from '@ionic/angular/standalone';
 
 @Component({
   standalone: true,
