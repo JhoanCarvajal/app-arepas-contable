@@ -16,13 +16,14 @@ import {
   IonLabel,
   IonText,
   IonButton,
-  IonIcon
+  IonIcon,
+  ActionSheetController,
+  ToastController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { cashOutline, walletOutline } from 'ionicons/icons';
 import { FinanceService, Submission } from '../../services/finance.service';
 import { BoxesService } from '../../services/boxes.service';
-import { ActionSheetController, ToastController } from '@ionic/angular';
 
 @Component({
   templateUrl: './history.page.html',
@@ -49,14 +50,14 @@ import { ActionSheetController, ToastController } from '@ionic/angular';
 })
 export class HistoryPage implements OnInit {
   private boxesService = inject(BoxesService);
-  private actionSheetCtrl = inject(ActionSheetController);
-  private toastCtrl = inject(ToastController);
-  private finance = inject(FinanceService);
 
   financeService = inject(FinanceService);
   history = this.financeService.history;
 
-  constructor() {
+  constructor(
+    private actionSheetCtrl: ActionSheetController,
+    private toastController: ToastController
+  ) {
     addIcons({ cashOutline, walletOutline });
   }
 
@@ -76,24 +77,43 @@ export class HistoryPage implements OnInit {
   async openAddToBox(item: Submission) {
     const boxes = this.boxesService.getAll();
     if (!boxes || boxes.length === 0) {
-      const t = await this.toastCtrl.create({ message: 'No hay cajas. Crea una primero.', duration: 2000 });
-      await t.present();
+      const toast = await this.toastController.create({
+        message: 'No hay cajas. Crea una primero.!',
+        duration: 1500,
+      });
+
+      await toast.present();
       return;
     }
 
     const buttons = boxes.map(b => ({
       text: b.name,
-      handler: () => {
+      role: 'selected',
+      handler: async () => {
         const record = this.buildRecordFromSubmission(item, b);
         this.boxesService.addRecordToBox(b.id, record);
-        this.toastCtrl.create({ message: `Agregado a ${b.name}`, duration: 1500 }).then(t => t.present());
-      },
+        const toast = await this.toastController.create({
+          message: `Agregado a ${b.name}`,
+          duration: 1500,
+        });
+
+        await toast.present();
+        // await Toast.show({ text: `Agregado a ${b.name}`, duration: 'short' });
+      }
     }));
 
-    buttons.push({ text: 'Cancelar', handler: () => {}});
+    buttons.push({
+      text: 'Cancelar',
+      role: 'cancel',
+      handler: () => Promise.resolve()
+    });
 
-    const as = await this.actionSheetCtrl.create({ header: 'Selecciona caja', buttons });
-    await as.present();
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Selecciona una caja',
+      buttons: buttons,
+    });
+
+    await actionSheet.present();
   }
 
   // mapea Submission a Partial<BoxRecord> de forma razonable
