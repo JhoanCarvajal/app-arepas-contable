@@ -6,10 +6,11 @@ export interface BoxRecord {
   date: string;
   createdAt: string;
   origin: 'manual' | 'historial' | string;
-  extraFields?: any;
+  extraFields?: boolean;
   quantity?: number;
   price?: number;
   total?: number;
+  note?: string | null;
 }
 
 export interface Box {
@@ -104,10 +105,11 @@ export class BoxesService {
       date: record.date ?? new Date().toLocaleDateString(),
       createdAt: new Date().toISOString(),
       origin: (record.origin as any) ?? 'manual',
-      extraFields: record.extraFields ?? null,
+      extraFields: record.extraFields ?? false,
       quantity: record.quantity ?? 0,
       price: record.price ?? 0,
       total: record.total ?? ((record.quantity ?? 0) * (record.price ?? 0)),
+      note: record.note ?? null,
     };
     box.records = [r, ...box.records];
     // optionally update total:

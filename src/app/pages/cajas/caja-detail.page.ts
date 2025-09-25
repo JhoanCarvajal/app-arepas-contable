@@ -5,7 +5,8 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import Chart from 'chart.js/auto';
 import { BoxesService, Box, BoxRecord } from '../../services/boxes.service';
 import { computed, effect } from '@angular/core';
-import { ToastController, AlertController } from '@ionic/angular/standalone';
+import { ToastController, AlertController, ModalController } from '@ionic/angular/standalone';
+import { NewRecordModalComponent } from './new-record-modal.component';
 
 @Component({
   standalone: true,
@@ -18,9 +19,12 @@ export class CajaDetailPage implements AfterViewInit {
   private boxesService = inject(BoxesService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
+  private modalCtrl = inject(ModalController);
 
   @ViewChild('chartCanvas', { static: false }) chartCanvas?: ElementRef<HTMLCanvasElement>;
   chart?: Chart;
+
+  message = '';
 
   // obtener id desde params (ruta /tabs/cajas/:id)
   boxId = Number(this.route.snapshot.paramMap.get('id'));
@@ -108,47 +112,44 @@ export class CajaDetailPage implements AfterViewInit {
     this.boxesService.updateBox(b);
   }
 
+  async openModal() {
+    const modal = await this.modalCtrl.create({
+      component: NewRecordModalComponent,
+    });
+    modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+
+    if (role === 'confirm') {
+      this.message = `Hello, ${data}!`;
+    }
+  }
+
+  // reemplaza / usa en lugar de la versión anterior
   async openAddRecord(type: 'ingreso' | 'egreso') {
-    const header = type === 'ingreso' ? 'Agregar ingreso' : 'Agregar egreso';
-    const defaultDate = new Date().toISOString().slice(0, 10); // yyyy-mm-dd for date input
-
-    const alert = await this.alertCtrl.create({
-      header,
-      inputs: [
-        { name: 'date', type: 'date', value: defaultDate, label: 'Fecha' },
-        { name: 'quantity', type: 'number', placeholder: 'Cantidad (opcional)' },
-        { name: 'price', type: 'number', placeholder: 'Precio unitario (opcional)' },
-        { name: 'total', type: 'number', placeholder: 'Total (si lo especificas se usará)' },
-        { name: 'note', type: 'text', placeholder: 'Nota (opcional)' },
-      ],
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Agregar',
-          handler: (data: any) => {
-            const qty = Number(data.quantity) || 0;
-            const price = Number(data.price) || 0;
-            let total = data.total !== undefined && data.total !== '' ? Number(data.total) : (qty * price);
-            if (isNaN(total)) total = 0;
-            if (type === 'egreso') total = -Math.abs(total); // egreso como valor negativo para restar del total
-
-            const recordPartial = {
-              date: data.date ? new Date(data.date).toLocaleDateString() : new Date().toLocaleDateString(),
-              origin: 'manual',
-              quantity: qty || undefined,
-              price: price || undefined,
-              total,
-              extraFields: { note: data.note ?? null },
-            };
-
-            this.boxesService.addRecordToBox(this.boxId, recordPartial);
-
-            this.toastCtrl.create({ message: `${header} agregada`, duration: 1400 }).then(t => t.present());
-          },
-        },
-      ],
+    const modal = await this.modalCtrl.create({
+      component: NewRecordModalComponent,
+      componentProps: {
+        type,
+        boxId: this.boxId,
+      },
+      breakpoints: [0, 0.5, 0.9],
+      initialBreakpoint: 0.6,
     });
 
-    await alert.present();
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    if (role !== 'confirm' || !data) return;
+
+    // el modal puede devolver el record directamente o dentro de { record }
+    const record = (data && (data.record ?? data)) as Partial<BoxRecord>;
+    if (!record) return;
+
+    this.boxesService.addRecordToBox(this.boxId, record);
+
+    // await Toast.show({ text: `${type === 'ingreso' ? 'Ingreso' : 'Egreso'} agregado`, duration: 'short' });
+    this.toastCtrl.create({ message: `${type === 'ingreso' ? 'Ingreso' : 'Egreso'} agregado`, duration: 1400 }).then(t => t.present());
   }
+
 }

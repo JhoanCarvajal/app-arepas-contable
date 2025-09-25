@@ -1,0 +1,69 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ header }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form (ngSubmit)="confirm()" #form="ngForm">
+    <ion-item>
+      <ion-label position="stacked">Fecha</ion-label>
+      <ion-datetime
+        display-format="DD/MM/YYYY"
+        picker-format="DD/MM/YYYY"
+        [(ngModel)]="date"
+        name="date"
+        presentation="date">
+      </ion-datetime>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Cantidad y Precio</ion-label>
+      <!-- <ion-input type="checkbox" [(ngModel)]="extraFields" name="extraFields" placeholder="Origen del ingreso/egreso"></ion-input> -->
+      <ion-checkbox slot="end" [(ngModel)]="extraFields" (ngModelChange)="toggleExtraFields()" name="extraFields"></ion-checkbox>
+    </ion-item>
+
+    @if (extraFields) {
+      <ion-item>
+        <ion-label position="stacked">Cantidad (opcional)</ion-label>
+        <ion-input type="number" [(ngModel)]="quantity" (ngModelChange)="changeQuantity()" name="quantity" placeholder="Cantidad"></ion-input>
+      </ion-item>
+  
+      <ion-item>
+        <ion-label position="stacked">Precio unitario (opcional)</ion-label>
+        <ion-input type="number" [(ngModel)]="price" (ngModelChange)="changePrice()" name="price" placeholder="Precio"></ion-input>
+      </ion-item>
+
+    } @else {
+      <ion-item>
+        <ion-text color="medium">
+          <p>Si no especificas cantidad y precio unitario, solo se usará el total.</p>
+        </ion-text>
+      </ion-item>
+    }
+
+    <ion-item>
+      <ion-label position="stacked">Total</ion-label>
+      <ion-input type="number" [(ngModel)]="total" name="total" placeholder="Total"
+      disabled="{{extraFields}}"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Nota (opcional)</ion-label>
+      <ion-input type="text" [(ngModel)]="note" name="note" placeholder="Nota"></ion-input>
+    </ion-item>
+
+    <div class="ion-padding-vertical">
+      <ion-grid>
+        <ion-row>
+          <ion-col>
+            <ion-button expand="block" color="medium" (click)="cancel()">Cancelar</ion-button>
+          </ion-col>
+          <ion-col>
+            <ion-button expand="block" color="primary" (click)="confirm()">Agregar</ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+  </form>
+</ion-content>

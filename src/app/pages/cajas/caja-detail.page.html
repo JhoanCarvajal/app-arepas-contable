@@ -36,6 +36,7 @@
       <ion-label>
         <h3>{{ r.date }}</h3>
         <p>Origen: {{ r.origin }}</p>
+        @if (r.note) {<p>Nota: {{ r.note }}</p>}
         <p class="ion-text-wrap">Total: ${{ r.total | number:'1.0-0' }}</p>
       </ion-label>
       <ion-button fill="clear" color="danger" slot="end" (click)="removeRecord(r.id)">Eliminar</ion-button>
