@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
-  IonBackButton,
   IonButton,
   IonButtons,
   IonContent,
@@ -25,7 +24,6 @@ import { personCircle, personCircleOutline, sunny, sunnyOutline } from 'ionicons
   templateUrl: 'app-settings.page.html',
   imports: [
     FormsModule,
-    IonBackButton,
     IonButton,
     IonButtons,
     IonContent,
