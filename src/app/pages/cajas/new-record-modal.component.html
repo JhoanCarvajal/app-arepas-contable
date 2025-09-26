@@ -5,13 +5,14 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form (ngSubmit)="confirm()" #form="ngForm">
+  <form (ngSubmit)="confirm()">
     <ion-item>
       <ion-label position="stacked">Fecha</ion-label>
       <ion-datetime
         display-format="DD/MM/YYYY"
         picker-format="DD/MM/YYYY"
-        [(ngModel)]="date"
+        [value]="date"
+        (ionChange)="changeDate($event)"
         name="date"
         presentation="date">
       </ion-datetime>
@@ -20,18 +21,18 @@
     <ion-item>
       <ion-label position="stacked">Cantidad y Precio</ion-label>
       <!-- <ion-input type="checkbox" [(ngModel)]="extraFields" name="extraFields" placeholder="Origen del ingreso/egreso"></ion-input> -->
-      <ion-checkbox slot="end" [(ngModel)]="extraFields" (ngModelChange)="toggleExtraFields()" name="extraFields"></ion-checkbox>
+      <ion-checkbox slot="end" [value]="extraFields" (ionChange)="toggleExtraFields()" name="extraFields"></ion-checkbox>
     </ion-item>
 
     @if (extraFields) {
       <ion-item>
         <ion-label position="stacked">Cantidad (opcional)</ion-label>
-        <ion-input type="number" [(ngModel)]="quantity" (ngModelChange)="changeQuantity()" name="quantity" placeholder="Cantidad"></ion-input>
+        <ion-input type="number" [value]="quantity" (ionChange)="changeQuantity($event)" name="quantity" placeholder="Cantidad"></ion-input>
       </ion-item>
   
       <ion-item>
         <ion-label position="stacked">Precio unitario (opcional)</ion-label>
-        <ion-input type="number" [(ngModel)]="price" (ngModelChange)="changePrice()" name="price" placeholder="Precio"></ion-input>
+        <ion-input type="number" [value]="price" (ionChange)="changePrice($event)" name="price" placeholder="Precio"></ion-input>
       </ion-item>
 
     } @else {
@@ -44,13 +45,13 @@
 
     <ion-item>
       <ion-label position="stacked">Total</ion-label>
-      <ion-input type="number" [(ngModel)]="total" name="total" placeholder="Total"
-      disabled="{{extraFields}}"></ion-input>
+      <ion-input type="number" [value]="total" name="total" placeholder="Total"
+      disabled="{{extraFields}}" (ionChange)="changeTotal($event)"></ion-input>
     </ion-item>
 
     <ion-item>
       <ion-label position="stacked">Nota (opcional)</ion-label>
-      <ion-input type="text" [(ngModel)]="note" name="note" placeholder="Nota"></ion-input>
+      <ion-input type="text" [value]="note" (ionChange)="changeNote($event)" name="note" placeholder="Nota"></ion-input>
     </ion-item>
 
     <div class="ion-padding-vertical">
