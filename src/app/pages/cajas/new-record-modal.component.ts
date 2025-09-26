@@ -1,88 +1,119 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, signal, WritableSignal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController } from '@ionic/angular';
-import { IonCheckbox } from '@ionic/angular/standalone';
+import { ModalController } from '@ionic/angular/standalone';
+import { FormsModule, NgForm } from '@angular/forms';
+import {
+  IonCheckbox,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonDatetime,
+  IonContent,
+  IonText,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonButton
+} from '@ionic/angular/standalone';
 
 @Component({
   standalone: true,
-  imports: [IonicModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonCheckbox,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonCheckbox,
+    IonInput,
+    IonItem,
+    IonLabel,
+    IonDatetime,
+    IonContent,
+    IonText,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonButton
+  ],
   templateUrl: './new-record-modal.component.html',
 })
 export class NewRecordModalComponent {
   @Input() type: 'ingreso' | 'egreso' = 'ingreso';
   @Input() boxId?: number;
 
+  @ViewChild('newRecordForm') newRecordForm?: NgForm;
+
   private modalCtrl = inject(ModalController);
 
-  // form fields
-  // date: string = new Date().toISOString().slice(0, 10); // yyyy-mm-dd
-  date: string = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
-  extraFields: boolean = false;
-  quantity?: number | null = null;
-  price?: number | null = null;
-  total?: number | null = null;
-  note: string | null = null;
+  private getTodayISOString(): string {
+    return new Date().toISOString();
+  }
+
+  // form fields -> usando Signals
+  date: WritableSignal<string> = signal(new Date().toISOString().split('T')[0]); // yyyy-mm-dd
+  extraFields: WritableSignal<boolean> = signal(false);
+  quantity: WritableSignal<number | null> = signal(null);
+  price: WritableSignal<number | null> = signal(null);
+  total: WritableSignal<number | null> = signal(null);
+  note: WritableSignal<string | null> = signal(null);
 
   get header() {
     return this.type === 'ingreso' ? 'Agregar ingreso' : 'Agregar egreso';
   }
 
   changeDate(event: any) {
-    // event puede venir de (ionChange) { detail: { value } } o de input nativo (target.value)
     const raw = event?.detail?.value ?? event?.target?.value ?? event;
-    this.date = raw ? String(raw) : new Date().toISOString().split('T')[0];
+    this.date.set(raw ? String(raw) : new Date().toISOString().split('T')[0]);
   }
 
   changeQuantity(event: any) {
-    // Normalizar valor desde ionInput o input nativo
     const raw = event?.detail?.value ?? event?.target?.value ?? event;
     const parsed = parseFloat(raw);
-    this.quantity = Number.isNaN(parsed) ? null : parsed;
+    this.quantity.set(Number.isNaN(parsed) ? null : parsed);
 
-    // Solo calcular total si también hay precio válido
-    if (this.quantity != null && this.price != null) {
-      this.total = Number(this.quantity) * Number(this.price);
+    if (this.quantity() != null && this.price() != null) {
+      this.total.set(Number(this.quantity()) * Number(this.price()));
     } else {
-      // si falta alguno de los dos, limpiar el total para evitar datos inconsistentes
-      this.total = null;
+      this.total.set(null);
     }
   }
 
   changePrice(event: any) {
-    // event puede venir de (ionInput) { detail: { value } } o de input nativo (target.value)
     const raw = event?.detail?.value ?? event?.target?.value ?? event;
     const parsed = parseFloat(raw);
-    this.price = Number.isNaN(parsed) ? null : parsed;
+    this.price.set(Number.isNaN(parsed) ? null : parsed);
 
-    if (this.quantity != null && this.price != null) {
-      this.total = Number(this.quantity) * Number(this.price);
+    if (this.quantity() != null && this.price() != null) {
+      this.total.set(Number(this.quantity()) * Number(this.price()));
     } else {
-      this.total = null;
+      this.total.set(null);
     }
   }
 
   changeTotal(event: any) {
-    // event puede venir de (ionChange) { detail: { value } } o de input nativo (target.value)
     const raw = event?.detail?.value ?? event?.target?.value ?? event;
     const parsed = parseFloat(raw);
-    this.total = Number.isNaN(parsed) ? null : parsed;
+    this.total.set(Number.isNaN(parsed) ? null : parsed);
   }
 
   toggleExtraFields() {
-    this.extraFields = !this.extraFields;
-    // detectar los cambios en el dom y actualizar los valores de quantity y price
-
-    if (!this.extraFields) {
-      // reset quantity and price if extraFields is turned off
-      this.quantity = null;
-      this.price = null;
-      this.total = null;
+    const next = !this.extraFields();
+    this.extraFields.set(next);
+    if (!next) {
+      this.quantity.set(null);
+      this.price.set(null);
+      this.total.set(null);
     }
   }
 
   changeNote(event: any) {
     const raw = event?.detail?.value ?? event?.target?.value ?? event;
-    this.note = raw ? String(raw) : null;
+    this.note.set(raw ? String(raw) : null);
   }
 
   cancel() {
@@ -90,30 +121,29 @@ export class NewRecordModalComponent {
   }
 
   confirm() {
-    const qty = Number(this.quantity) || 0;
-    const pr = Number(this.price) || 0;
+    const qty = Number(this.quantity() ?? 0) || 0;
+    const pr = Number(this.price() ?? 0) || 0;
 
     let computedTotal: number;
-    if (this.total !== null && this.total !== undefined) {
-      computedTotal = Number(this.total) || 0;
+    if (this.total() !== null && this.total() !== undefined) {
+      computedTotal = Number(this.total()) || 0;
     } else {
       computedTotal = qty * pr;
     }
 
-    // si es egreso, guardar como negativo (opcional según tu lógica)
     if (this.type === 'egreso') {
       computedTotal = -Math.abs(Number(computedTotal));
     }
 
     const record = {
-      date: this.date,
+      date: this.date(),
       quantity: qty,
       price: pr,
       total: computedTotal,
-      note: this.note,
+      note: this.note(),
       type: this.type,
       boxId: this.boxId,
-      extraFields: this.extraFields,
+      extraFields: this.extraFields(),
     };
 
     this.modalCtrl.dismiss(record, 'confirm');
