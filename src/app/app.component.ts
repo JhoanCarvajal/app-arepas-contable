@@ -15,7 +15,7 @@ export class AppComponent {
   async initializeApp() {
     // Show the splash for two seconds and then automatically hide it:
     await SplashScreen.show({
-      showDuration: 2000,
+      showDuration: 1000,
       autoHide: true,
     });
   }
