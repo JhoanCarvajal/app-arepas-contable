@@ -33,6 +33,7 @@
   </ion-card>
 
   <ion-list>
+    <!-- TODO: evitar que cuando se elimine una caja se navegue a la misma -->
     <ion-item *ngFor="let box of boxes" [routerLink]="['/tabs/cajas', box.id]">
       <ion-icon [name]="box.icon" slot="start"></ion-icon>
       <ion-label>
@@ -48,7 +49,7 @@
         slot="end"
         color="danger"
         fill="clear"
-        (click)="$event.stopPropagation(); deleteBox(box.id)">
+        (click)="deleteBox($event, box.id)">
         <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
       </ion-button>
     </ion-item>
