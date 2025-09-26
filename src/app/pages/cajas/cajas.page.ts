@@ -30,12 +30,12 @@ export class CajasPage {
     return this.boxesService.getAll();
   }
 
-  createBox() {
+  async createBox() {
     const name = (this.newName || '').trim();
     if (!name) return;
 
     // crear la caja en cero
-    const createdBox =this.boxesService.addBox({
+    const createdBox = await this.boxesService.addBox({
       name,
       icon: this.newIcon,
       total: 0,
@@ -49,7 +49,7 @@ export class CajasPage {
             total: this.newTotal,
             note: 'Ingreso inicial',
         };
-        this.boxesService.addRecordToBox(createdBox.id, newRecord);
+        await this.boxesService.addRecordToBox(createdBox.id, newRecord);
     }
 
     // reset form

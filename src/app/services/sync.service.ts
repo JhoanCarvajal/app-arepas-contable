@@ -5,6 +5,7 @@ import { FinanceService, Submission } from './finance.service'; // Import Submis
 import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { Network } from '@capacitor/network';
+// Removed: import { HttpClient } from '@angular/common/http'; // Import HttpClient for API ping
 
 @Injectable({
   providedIn: 'root'
@@ -14,8 +15,11 @@ export class SyncService {
   constructor(
     private apiService: ApiService,
     private boxesService: BoxesService,
-    private financeService: FinanceService
+    private financeService: FinanceService,
+    // Removed: private http: HttpClient // Inject HttpClient
   ) { }
+
+  // Removed: isOnlineAndApiAvailable method
 
   // Helper function to parse and format dates to YYYY-MM-DD
   private _parseAndFormatDateToYYYYMMDD(dateStr: string): string {
@@ -36,7 +40,8 @@ export class SyncService {
     const monthMap: { [key: string]: string } = {
       'enero': 'January', 'febrero': 'February', 'marzo': 'March', 'abril': 'April',
       'mayo': 'May', 'junio': 'June', 'julio': 'July', 'agosto': 'August',
-      'septiembre': 'September', 'octubre': 'October', 'noviembre': 'November', 'diciembre': 'December'
+      'septiembre': 'September', 'octubre': 'October',
+      'noviembre': 'November', 'diciembre': 'December'
     };
 
     const lowerDateStr = dateStr.toLowerCase();

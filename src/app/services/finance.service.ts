@@ -1,6 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { ApiService } from './api.service';
 import { tap } from 'rxjs/operators';
+// Removed: import { SyncService } from './sync.service'; // Import SyncService
 
 export interface Submission {
   id?: number; // <-- nuevo id numérico
@@ -31,6 +32,7 @@ export class FinanceService {
   history = signal<Submission[]>([]);
   private storageKey = 'registro-ganancias-history';
   private apiService = inject(ApiService);
+  // Removed: private syncService = inject(SyncService); // Inject SyncService
 
   constructor() {
     this.loadFromLocalStorage();
@@ -50,7 +52,7 @@ export class FinanceService {
     this.saveToLocalStorage();
   }
 
-  addSubmission(sub: Submission) {
+  async addSubmission(sub: Submission) { // Make async
     const s: Submission = {
       ...sub,
       id: sub.id ?? this.generateUniqueId(),
@@ -59,9 +61,13 @@ export class FinanceService {
     this.history.set(updated);
     this.saveToLocalStorage();
 
-    this.apiService.createHistory(s).pipe(
-      tap(apiHistory => console.log('History created on API:', apiHistory))
-    ).subscribe({ error: err => console.error('Failed to create history on API', err) });
+    if (await this.apiService.isOnlineAndApiAvailable()) { // Conditional API call
+      this.apiService.createHistory(s).pipe(
+        tap(apiHistory => console.log('History created on API:', apiHistory))
+      ).subscribe({ error: err => console.error('Failed to create history on API', err) });
+    } else {
+      console.log('Offline: History saved locally, will sync later.');
+    }
   }
 
   getSubmission(createdAt: string): Submission | undefined {
@@ -72,7 +78,7 @@ export class FinanceService {
     return this.history().find(h => h.id === id);
   }
 
-  updateSubmission(updated: Submission) {
+  async updateSubmission(updated: Submission) { // Make async
     const idx = this.history().findIndex(h => (updated.id !== undefined && h.id === updated.id));
     if (idx === -1) return;
     const copy = [...this.history()];
@@ -80,20 +86,26 @@ export class FinanceService {
     this.history.set(copy);
     this.saveToLocalStorage();
 
-    if (updated.id) {
+    if (updated.id && await this.apiService.isOnlineAndApiAvailable()) { // Conditional API call
       this.apiService.updateHistory(updated.id, updated).pipe(
         tap(apiHistory => console.log('History updated on API:', apiHistory))
       ).subscribe({ error: err => console.error('Failed to update history on API', err) });
+    } else {
+      console.log('Offline: History updated locally, will sync later.');
     }
   }
 
-  removeSubmission(id: number) {
+  async removeSubmission(id: number) { // Make async
     this.history.set(this.history().filter(h => h.id !== id));
     this.saveToLocalStorage();
 
-    this.apiService.deleteHistory(id).pipe(
-      tap(() => console.log('History deleted on API:', id))
-    ).subscribe({ error: err => console.error('Failed to delete history on API', err) });
+    if (await this.apiService.isOnlineAndApiAvailable()) { // Conditional API call
+      this.apiService.deleteHistory(id).pipe(
+        tap(() => console.log('History deleted on API:', id))
+      ).subscribe({ error: err => console.error('Failed to delete history on API', err) });
+    } else {
+      console.log('Offline: History deleted locally, will sync later.');
+    }
   }
 
   private saveToLocalStorage() {

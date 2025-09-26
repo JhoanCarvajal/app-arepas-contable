@@ -1,6 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { ApiService } from './api.service';
 import { tap } from 'rxjs/operators';
+// Removed: import { SyncService } from './sync.service'; // Import SyncService
 
 export interface BoxRecord {
   id: number;
@@ -31,6 +32,7 @@ export class BoxesService {
   private storageKey = 'registro-ganancias-boxes';
   boxes = signal<Box[]>([]);
   private apiService = inject(ApiService);
+  // Removed: private syncService = inject(SyncService); // Inject SyncService
 
   constructor() {
     this.loadFromLocalStorage();
@@ -77,7 +79,7 @@ export class BoxesService {
     this.saveToLocalStorage();
   }
 
-  addBox(data: { name: string; icon?: string; total?: number }) {
+  async addBox(data: { name: string; icon?: string; total?: number }) { // Make async
     const box: Box = {
       id: this.generateUniqueId(),
       icon: data.icon ?? 'cube-outline',
@@ -89,14 +91,18 @@ export class BoxesService {
     this.boxes.set([box, ...this.boxes()]);
     this.saveToLocalStorage();
 
-    this.apiService.createBox(box).pipe(
-      tap(apiBox => console.log('Box created on API:', apiBox))
-    ).subscribe({ error: err => console.error('Failed to create box on API', err) });
+    if (await this.apiService.isOnlineAndApiAvailable()) { // Conditional API call
+      this.apiService.createBox(box).pipe(
+        tap(apiBox => console.log('Box created on API:', apiBox))
+      ).subscribe({ error: err => console.error('Failed to create box on API', err) });
+    } else {
+      console.log('Offline: Box saved locally, will sync later.');
+    }
 
     return box;
   }
 
-  updateBox(updated: Box) {
+  async updateBox(updated: Box) { // Make async
     const idx = this.boxes().findIndex(b => b.id === updated.id);
     if (idx === -1) return;
     const copy = [...this.boxes()];
@@ -104,21 +110,29 @@ export class BoxesService {
     this.boxes.set(copy);
     this.saveToLocalStorage();
 
-    this.apiService.updateBox(updated.id, updated).pipe(
-      tap(apiBox => console.log('Box updated on API:', apiBox))
-    ).subscribe({ error: err => console.error('Failed to update box on API', err) });
+    if (await this.apiService.isOnlineAndApiAvailable()) { // Conditional API call
+      this.apiService.updateBox(updated.id, updated).pipe(
+        tap(apiBox => console.log('Box updated on API:', apiBox))
+      ).subscribe({ error: err => console.error('Failed to update box on API', err) });
+    } else {
+      console.log('Offline: Box updated locally, will sync later.');
+    }
   }
 
-  removeBox(id: number) {
+  async removeBox(id: number) { // Make async
     this.boxes.set(this.boxes().filter(b => b.id !== id));
     this.saveToLocalStorage();
 
-    this.apiService.deleteBox(id).pipe(
-      tap(() => console.log('Box deleted on API:', id))
-    ).subscribe({ error: err => console.error('Failed to delete box on API', err) });
+    if (await this.apiService.isOnlineAndApiAvailable()) { // Conditional API call
+      this.apiService.deleteBox(id).pipe(
+        tap(() => console.log('Box deleted on API:', id))
+      ).subscribe({ error: err => console.error('Failed to delete box on API', err) });
+    } else {
+      console.log('Offline: Box deleted locally, will sync later.');
+    }
   }
 
-  addRecordToBox(boxId: number, record: Partial<BoxRecord>) {
+  async addRecordToBox(boxId: number, record: Partial<BoxRecord>) { // Make async
     const box = this.getById(boxId);
     if (!box) return;
     const newRecord: BoxRecord = {
@@ -135,11 +149,15 @@ export class BoxesService {
     };
     box.records = [newRecord, ...box.records];
     box.total = (box.total ?? 0) + (newRecord.total ?? 0);
-    this.updateBox(box);
+    this.updateBox(box); // This calls updateBox, which is now async and conditional
 
-    this.apiService.createRecord(newRecord).pipe(
-      tap(apiRecord => console.log('Record created on API:', apiRecord))
-    ).subscribe({ error: err => console.error('Failed to create record on API', err) });
+    if (await this.apiService.isOnlineAndApiAvailable()) { // Conditional API call
+      this.apiService.createRecord(newRecord).pipe(
+        tap(apiRecord => console.log('Record created on API:', apiRecord))
+      ).subscribe({ error: err => console.error('Failed to create record on API', err) });
+    } else {
+      console.log('Offline: Record saved locally, will sync later.');
+    }
 
     return newRecord;
   }
@@ -159,7 +177,7 @@ export class BoxesService {
     this.saveToLocalStorage();
   }
 
-  removeRecordFromBox(boxId: number, recordId: number) {
+  async removeRecordFromBox(boxId: number, recordId: number) { // Make async
     const box = this.getById(boxId);
     if (!box) return;
 
@@ -168,10 +186,14 @@ export class BoxesService {
 
     box.total = (box.total ?? 0) - (record.total ?? 0);
     box.records = box.records.filter(r => r.id !== recordId);
-    this.updateBox(box);
+    this.updateBox(box); // This calls updateBox, which is now async and conditional
 
-    this.apiService.deleteRecord(recordId).pipe(
-      tap(() => console.log('Record deleted on API:', recordId))
-    ).subscribe({ error: err => console.error('Failed to delete record on API', err) });
+    if (await this.apiService.isOnlineAndApiAvailable()) { // Conditional API call
+      this.apiService.deleteRecord(recordId).pipe(
+        tap(() => console.log('Record deleted on API:', recordId))
+      ).subscribe({ error: err => console.error('Failed to delete record on API', err) });
+    } else {
+      console.log('Offline: Record deleted locally, will sync later.');
+    }
   }
 }

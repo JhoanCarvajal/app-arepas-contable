@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { Network } from '@capacitor/network'; // Import Network
 
 @Injectable({
   providedIn: 'root'
@@ -10,13 +11,41 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
+  /**
+   * Checks if the device is online and if the API is reachable.
+   * @returns Promise<boolean> - true if online and API is reachable, false otherwise.
+   */
+  async isOnlineAndApiAvailable(): Promise<boolean> {
+    const status = await Network.getStatus();
+    if (!status.connected) {
+      console.log('Offline: No network connection.');
+      return false;
+    }
+
+    try {
+      // Attempt a simple GET request to the API root to check reachability
+      // Use a short timeout to avoid long waits if API is truly down
+      await this.http.get(`${this.API_URL}/`, { responseType: 'text' }).toPromise();
+      console.log('Online: API is reachable.');
+      return true;
+    } catch (error) {
+      console.warn('Online: API is not reachable or returned an error.', error);
+      return false;
+    }
+  }
+
   private parseAndFormatDate(dateStr: string): string {
-    // Check if it's already a valid ISO-like string
+    // If it's already YYYY-MM-DD, return it
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return dateStr;
+    }
+
+    // Try to parse as ISO string first (e.g., from createdAt)
     if (dateStr.includes('T') && dateStr.includes('Z')) {
       try {
-        return new Date(dateStr).toISOString();
+        return new Date(dateStr).toISOString().split('T')[0];
       } catch (e) {
-        // Fallback if it's a weird format
+        // Fallback to other parsing
       }
     }
 
@@ -29,23 +58,36 @@ export class ApiService {
     const lowerDateStr = dateStr.toLowerCase();
     for (const monthSp in monthMap) {
       if (lowerDateStr.includes(monthSp)) {
+        // Handles "10 de septiembre de 2025" -> "10 September 2025"
         const dateWithEnMonth = lowerDateStr.replace(monthSp, monthMap[monthSp]).replace(/ de /g, ' ');
         try {
-          // Handles "10 September 2025"
-          return new Date(dateWithEnMonth).toISOString();
+          return new Date(dateWithEnMonth).toISOString().split('T')[0];
         } catch (e) {
           // Continue to next fallback
         }
       }
     }
 
-    // Fallback for other formats that new Date() might understand, or if parsing fails
+    // Handles "DD/MM/YYYY" or "D/M/YYYY"
+    if (dateStr.includes('/')) {
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        const [day, month, year] = parts;
+        try {
+          // new Date(year, monthIndex, day)
+          return new Date(Number(year), Number(month) - 1, Number(day)).toISOString().split('T')[0];
+        } catch (e) {
+          // Continue to next fallback
+        }
+      }
+    }
+
+    // Final fallback: try to parse directly and return YYYY-MM-DD
     try {
-      return new Date(dateStr).toISOString();
+      return new Date(dateStr).toISOString().split('T')[0];
     } catch (e) {
-      console.error(`Could not parse date: ${dateStr}`);
-      // Return a value that won't crash, though it might be incorrect
-      return new Date().toISOString();
+      console.warn(`Could not parse date for cleanup: ${dateStr}. Returning current date.`);
+      return new Date().toISOString().split('T')[0]; // Return current date as a last resort
     }
   }
 
