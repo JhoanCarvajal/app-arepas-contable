@@ -32,18 +32,23 @@
   </div>
 
   <ion-list>
-    <ion-item lines="full" *ngFor="let r of series()">
-      <ion-label>
-        <h3>{{ r.date }}</h3>
-        <p>Origen: {{ r.origin }}</p>
-        @if (r.note) {<p>Nota: {{ r.note }}</p>}
-        <p class="ion-text-wrap">Total: ${{ r.total | number:'1.0-0' }}</p>
-      </ion-label>
-      <ion-button fill="clear" color="danger" slot="end" (click)="removeRecord(r.id)">Eliminar</ion-button>
-    </ion-item>
+    @for (r of series(); track $index) {
+        <ion-item lines="full">
+          <ion-label>
+            <h3>{{ r.date }}</h3>
+            <p>Origen: {{ r.origin }}</p>
+            @if (r.note) {<p>Nota: {{ r.note }}</p>}
+            <p class="ion-text-wrap">Total: ${{ r.total | number:'1.0-0' }}</p>
+          </ion-label>
+          <ion-button fill="clear" color="danger" slot="end" (click)="removeRecord(r.id)">Eliminar</ion-button>
+        </ion-item>
+    }
 
-    <ion-item *ngIf="series().length === 0" lines="none">
-      <ion-label>No hay movimientos en esta caja.</ion-label>
-    </ion-item>
+    @if (series().length === 0) {
+        <ion-item lines="none">
+          <ion-label>No hay movimientos en esta caja.</ion-label>
+        </ion-item>
+    }
+
   </ion-list>
 </ion-content>

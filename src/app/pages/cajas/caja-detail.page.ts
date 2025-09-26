@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import Chart from 'chart.js/auto';
@@ -10,7 +10,7 @@ import { NewRecordModalComponent } from './new-record-modal.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule],
+  imports: [DecimalPipe, IonicModule, RouterModule],
   templateUrl: './caja-detail.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -133,8 +133,6 @@ export class CajaDetailPage implements AfterViewInit {
         type,
         boxId: this.boxId,
       },
-      breakpoints: [0, 0.5, 0.9],
-      initialBreakpoint: 0.6,
     });
 
     await modal.present();
