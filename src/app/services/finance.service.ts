@@ -1,4 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
+import { ApiService } from './api.service';
+import { tap } from 'rxjs/operators';
 
 export interface Submission {
   id?: number; // <-- nuevo id numérico
@@ -28,18 +30,24 @@ export interface Submission {
 export class FinanceService {
   history = signal<Submission[]>([]);
   private storageKey = 'registro-ganancias-history';
+  private apiService = inject(ApiService);
 
   constructor() {
     this.loadFromLocalStorage();
   }
 
-  // Genera un id numérico aleatorio y asegura que no exista colisión
   private generateUniqueId(): number {
     let id: number;
     do {
       id = Math.floor(Math.random() * 1_000_000_000);
     } while (this.history().some(h => h.id === id));
     return id;
+  }
+
+  addRecords(newRecords: Submission[]) {
+    const currentRecords = this.history();
+    this.history.set([...currentRecords, ...newRecords]);
+    this.saveToLocalStorage();
   }
 
   addSubmission(sub: Submission) {
@@ -50,9 +58,12 @@ export class FinanceService {
     const updated = [s, ...this.history()];
     this.history.set(updated);
     this.saveToLocalStorage();
+
+    this.apiService.createHistory(s).pipe(
+      tap(apiHistory => console.log('History created on API:', apiHistory))
+    ).subscribe({ error: err => console.error('Failed to create history on API', err) });
   }
 
-  // Obtener un registro por createdAt (id histórico)
   getSubmission(createdAt: string): Submission | undefined {
     return this.history().find(h => h.createdAt === createdAt);
   }
@@ -61,7 +72,6 @@ export class FinanceService {
     return this.history().find(h => h.id === id);
   }
 
-  // Actualizar un registro existente (por createdAt o id)
   updateSubmission(updated: Submission) {
     const idx = this.history().findIndex(h => (updated.id !== undefined && h.id === updated.id));
     if (idx === -1) return;
@@ -69,9 +79,23 @@ export class FinanceService {
     copy[idx] = { ...updated };
     this.history.set(copy);
     this.saveToLocalStorage();
+
+    if (updated.id) {
+      this.apiService.updateHistory(updated.id, updated).pipe(
+        tap(apiHistory => console.log('History updated on API:', apiHistory))
+      ).subscribe({ error: err => console.error('Failed to update history on API', err) });
+    }
   }
 
-  // Persistencia: localStorage
+  removeSubmission(id: number) {
+    this.history.set(this.history().filter(h => h.id !== id));
+    this.saveToLocalStorage();
+
+    this.apiService.deleteHistory(id).pipe(
+      tap(() => console.log('History deleted on API:', id))
+    ).subscribe({ error: err => console.error('Failed to delete history on API', err) });
+  }
+
   private saveToLocalStorage() {
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(this.history()));
@@ -89,5 +113,9 @@ export class FinanceService {
     } catch (e) {
       console.error('Error leyendo localStorage', e);
     }
+  }
+
+  getAll() {
+    return this.history();
   }
 }

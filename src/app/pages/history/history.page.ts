@@ -123,35 +123,35 @@ export class HistoryPage implements OnInit {
     let total = 0;
     if (name.includes('maíz') || name.includes('maiz')) {
       total = (s.cornBags ?? 0) * (s.cornPrice ?? 0);
-      return { date: s.date ?? new Date().toLocaleDateString(), origin: 'historial', quantity: s.cornBags ?? 0, price: s.cornPrice ?? 0, total };
+      return { date: s.date ?? new Date().toISOString().split('T')[0], origin: 'historial', quantity: s.cornBags ?? 0, price: s.cornPrice ?? 0, total };
     }
     if (name.includes('carbón') || name.includes('carbon')) {
       total = (s.charcoalBags ?? 0) * (s.charcoalPrice ?? 0);
-      return { date: s.date ?? new Date().toLocaleDateString(), origin: 'historial', quantity: s.charcoalBags ?? 0, price: s.charcoalPrice ?? 0, total };
+      return { date: s.date ?? new Date().toISOString().split('T')[0], origin: 'historial', quantity: s.charcoalBags ?? 0, price: s.charcoalPrice ?? 0, total };
     }
     if (name.includes('general')) {
       total = s.generalExpenses ?? 0;
-      return { date: s.date ?? new Date().toLocaleDateString(), origin: 'historial', total };
+      return { date: s.date ?? new Date().toISOString().split('T')[0], origin: 'historial', total };
     }
     if (name.includes('operacion') || name.includes('operac')) {
       total = s.operatingExpenses ?? 0;
-      return { date: s.date ?? new Date().toLocaleDateString(), origin: 'historial', total };
+      return { date: s.date ?? new Date().toISOString().split('T')[0], origin: 'historial', total };
     }
     if (name.includes('trabajador')) {
       total = s.workerExpenses ?? 0;
-      return { date: s.date ?? new Date().toLocaleDateString(), origin: 'historial', total };
+      return { date: s.date ?? new Date().toISOString().split('T')[0], origin: 'historial', total };
     }
     if (name.includes('arriendo')) {
       total = s.rentExpenses ?? 0;
-      return { date: s.date ?? new Date().toLocaleDateString(), origin: 'historial', total };
+      return { date: s.date ?? new Date().toISOString().split('T')[0], origin: 'historial', total };
     }
     if (name.includes('moto') || name.includes('motos')) {
       total = s.motorcycleExpenses ?? 0;
-      return { date: s.date ?? new Date().toLocaleDateString(), origin: 'historial', total };
+      return { date: s.date ?? new Date().toISOString().split('T')[0], origin: 'historial', total };
     }
 
     // fallback: guardar el netProfit como movimiento
     total = s.netProfit ?? 0;
-    return { date: s.date ?? new Date().toLocaleDateString(), origin: 'historial', total };
+    return { date: s.date ?? new Date().toISOString().split('T')[0], origin: 'historial', total };
   }
 }

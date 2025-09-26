@@ -177,7 +177,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
         // Si estamos en edición preservamos createdAt e id; en creación el servicio asigna id
         // createdAt: this.isEdit() && this.editingCreatedAt ? this.editingCreatedAt : new Date().toISOString(),
         id: this.isEdit() ? this.editingId ?? undefined : undefined,
-        date: new Date(this.recordDate()).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }),
+        date: new Date(this.recordDate()).toISOString().split('T')[0], // Formato YYYY-MM-DD
         earnings: earnings,
         // Detalle completo para permitir edición posterior
         createdAt: this.recordDate(),

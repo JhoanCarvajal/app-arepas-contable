@@ -7,6 +7,7 @@ import { BoxesService, Box, BoxRecord } from '../../services/boxes.service';
 import { computed, effect } from '@angular/core';
 import { ToastController, AlertController, ModalController } from '@ionic/angular/standalone';
 import { NewRecordModalComponent } from './new-record-modal.component';
+import { SyncService } from '../../services/sync.service';
 
 @Component({
   standalone: true,
@@ -20,28 +21,26 @@ export class CajaDetailPage implements AfterViewInit {
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private modalCtrl = inject(ModalController);
+  private syncService = inject(SyncService);
 
   @ViewChild('chartCanvas', { static: false }) chartCanvas?: ElementRef<HTMLCanvasElement>;
   chart?: Chart;
 
   message = '';
 
-  // obtener id desde params (ruta /tabs/cajas/:id)
   boxId = Number(this.route.snapshot.paramMap.get('id'));
-
-  // caja reactiva
   box = computed<Box | undefined>(() => this.boxesService.getById(this.boxId));
-
-  // records de la caja (ordenados por createdAt asc)
   series = computed(() => {
     const b = this.box();
     if (!b) return [] as BoxRecord[];
     return [...b.records].sort((a, z) => new Date(a.createdAt).getTime() - new Date(z.createdAt).getTime());
   });
 
+  ionViewWillEnter() {
+    this.syncService.syncBoxRecords(this.boxId);
+  }
+
   ngAfterViewInit(): void {
-    console.log(this.route.snapshot.paramMap.get('id'))
-    // si no existe la caja, redirigir a /tabs/cajas
     if (!this.box()) {
       window.alert(`Caja no encontrada ${this.boxId}`);
       window.location.href = '/tabs/cajas';
@@ -85,15 +84,8 @@ export class CajaDetailPage implements AfterViewInit {
     };
 
     build();
-    // efecto reactivo: reconstruir cuando cambien los records
-    // effect(() => {
-    //   // leer series para registrar dependencia
-    //   this.series();
-    //   build();
-    // });
   }
 
-  // helpers para template
   getBoxName() {
     return this.box()?.name ?? 'Caja';
   }
@@ -102,14 +94,8 @@ export class CajaDetailPage implements AfterViewInit {
     return this.box()?.total ?? 0;
   }
 
-  // eliminar record
   removeRecord(recordId: number) {
-    const b = this.box();
-    if (!b) return;
-    b.records = b.records.filter(r => r.id !== recordId);
-    // recalcular total opcional (sum records)
-    b.total = b.records.reduce((acc, r) => acc + (r.total ?? 0), 0);
-    this.boxesService.updateBox(b);
+    this.boxesService.removeRecordFromBox(this.boxId, recordId);
   }
 
   async openModal() {
@@ -125,7 +111,6 @@ export class CajaDetailPage implements AfterViewInit {
     }
   }
 
-  // reemplaza / usa en lugar de la versión anterior
   async openAddRecord(type: 'ingreso' | 'egreso') {
     const modal = await this.modalCtrl.create({
       component: NewRecordModalComponent,
@@ -140,13 +125,11 @@ export class CajaDetailPage implements AfterViewInit {
     const { data, role } = await modal.onWillDismiss();
     if (role !== 'confirm' || !data) return;
 
-    // el modal puede devolver el record directamente o dentro de { record }
     const record = (data && (data.record ?? data)) as Partial<BoxRecord>;
     if (!record) return;
 
     this.boxesService.addRecordToBox(this.boxId, record);
 
-    // await Toast.show({ text: `${type === 'ingreso' ? 'Ingreso' : 'Egreso'} agregado`, duration: 'short' });
     this.toastCtrl.create({ message: `${type === 'ingreso' ? 'Ingreso' : 'Egreso'} agregado`, duration: 1400 }).then(t => t.present());
   }
 

@@ -1,4 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
+import { ApiService } from './api.service';
+import { tap } from 'rxjs/operators';
 
 export interface BoxRecord {
   id: number;
@@ -28,6 +30,7 @@ export interface Box {
 export class BoxesService {
   private storageKey = 'registro-ganancias-boxes';
   boxes = signal<Box[]>([]);
+  private apiService = inject(ApiService);
 
   constructor() {
     this.loadFromLocalStorage();
@@ -61,11 +64,17 @@ export class BoxesService {
   }
 
   getAll() {
-    return this.boxes(); // devuelve el array actual (usado en templates)
+    return this.boxes();
   }
 
   getById(id: number) {
     return this.boxes().find(b => b.id === id);
+  }
+
+  addBoxes(newBoxes: Box[]) {
+    const currentBoxes = this.boxes();
+    this.boxes.set([...currentBoxes, ...newBoxes]);
+    this.saveToLocalStorage();
   }
 
   addBox(data: { name: string; icon?: string; total?: number }) {
@@ -79,6 +88,11 @@ export class BoxesService {
     };
     this.boxes.set([box, ...this.boxes()]);
     this.saveToLocalStorage();
+
+    this.apiService.createBox(box).pipe(
+      tap(apiBox => console.log('Box created on API:', apiBox))
+    ).subscribe({ error: err => console.error('Failed to create box on API', err) });
+
     return box;
   }
 
@@ -89,20 +103,28 @@ export class BoxesService {
     copy[idx] = { ...updated };
     this.boxes.set(copy);
     this.saveToLocalStorage();
+
+    this.apiService.updateBox(updated.id, updated).pipe(
+      tap(apiBox => console.log('Box updated on API:', apiBox))
+    ).subscribe({ error: err => console.error('Failed to update box on API', err) });
   }
 
   removeBox(id: number) {
     this.boxes.set(this.boxes().filter(b => b.id !== id));
     this.saveToLocalStorage();
+
+    this.apiService.deleteBox(id).pipe(
+      tap(() => console.log('Box deleted on API:', id))
+    ).subscribe({ error: err => console.error('Failed to delete box on API', err) });
   }
 
   addRecordToBox(boxId: number, record: Partial<BoxRecord>) {
     const box = this.getById(boxId);
     if (!box) return;
-    const r: BoxRecord = {
+    const newRecord: BoxRecord = {
       id: this.generateUniqueId(),
       boxId,
-      date: record.date ?? new Date().toLocaleDateString(),
+      date: record.date ?? new Date().toISOString().split('T')[0],
       createdAt: new Date().toISOString(),
       origin: (record.origin as any) ?? 'manual',
       extraFields: record.extraFields ?? false,
@@ -111,10 +133,45 @@ export class BoxesService {
       total: record.total ?? ((record.quantity ?? 0) * (record.price ?? 0)),
       note: record.note ?? null,
     };
-    box.records = [r, ...box.records];
-    // optionally update total:
-    box.total = (box.total ?? 0) + (r.total ?? 0);
+    box.records = [newRecord, ...box.records];
+    box.total = (box.total ?? 0) + (newRecord.total ?? 0);
     this.updateBox(box);
-    return r;
+
+    this.apiService.createRecord(newRecord).pipe(
+      tap(apiRecord => console.log('Record created on API:', apiRecord))
+    ).subscribe({ error: err => console.error('Failed to create record on API', err) });
+
+    return newRecord;
+  }
+
+  addRecordToBoxLocal(boxId: number, record: BoxRecord) {
+    const box = this.getById(boxId);
+    if (!box || box.records.find(r => r.id === record.id)) {
+      return;
+    }
+    box.records.push(record);
+    box.records.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const idx = this.boxes().findIndex(b => b.id === boxId);
+    if (idx === -1) return;
+    const copy = [...this.boxes()];
+    copy[idx] = box;
+    this.boxes.set(copy);
+    this.saveToLocalStorage();
+  }
+
+  removeRecordFromBox(boxId: number, recordId: number) {
+    const box = this.getById(boxId);
+    if (!box) return;
+
+    const record = box.records.find(r => r.id === recordId);
+    if (!record) return;
+
+    box.total = (box.total ?? 0) - (record.total ?? 0);
+    box.records = box.records.filter(r => r.id !== recordId);
+    this.updateBox(box);
+
+    this.apiService.deleteRecord(recordId).pipe(
+      tap(() => console.log('Record deleted on API:', recordId))
+    ).subscribe({ error: err => console.error('Failed to delete record on API', err) });
   }
 }
