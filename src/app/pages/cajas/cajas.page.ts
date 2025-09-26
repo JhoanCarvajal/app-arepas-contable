@@ -1,11 +1,12 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router'; // Import Router
 import { BoxesService, BoxRecord } from '../../services/boxes.service';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { cubeOutline, trashOutline } from 'ionicons/icons';
+import { AlertController } from '@ionic/angular/standalone';
 
 @Component({
   standalone: true,
@@ -15,6 +16,8 @@ import { cubeOutline, trashOutline } from 'ionicons/icons';
 })
 export class CajasPage {
   private boxesService = inject(BoxesService);
+  private alertController = inject(AlertController);
+  private router = inject(Router); // Inject Router
 
   // campos del formulario simple
   newName = '';
@@ -58,9 +61,31 @@ export class CajasPage {
     this.newTotal = null;
   }
 
-  deleteBox(event: any,id: number) {
+  async deleteBox(event: any, id: number) {
     event.stopPropagation();
-    if (!confirm('Eliminar esta caja?')) return;
-    this.boxesService.removeBox(id);
+
+    const alert = await this.alertController.create({
+      header: 'Confirmar eliminación',
+      message: '¿Está seguro que desea eliminar esta caja? Se eliminarán TODOS los registros asociados a ella.',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'secondary',
+        },
+        {
+          text: 'Eliminar',
+          handler: () => {
+            this.boxesService.removeBox(id);
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  goToBoxDetail(id: number) {
+    this.router.navigate(['/tabs/cajas', id]);
   }
 }

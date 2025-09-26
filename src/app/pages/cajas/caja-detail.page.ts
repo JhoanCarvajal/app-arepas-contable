@@ -18,7 +18,7 @@ import { SyncService } from '../../services/sync.service';
 export class CajaDetailPage implements AfterViewInit {
   private route = inject(ActivatedRoute);
   private boxesService = inject(BoxesService);
-  private alertCtrl = inject(AlertController);
+  private alertCtrl = inject(AlertController); // Already injected
   private toastCtrl = inject(ToastController);
   private modalCtrl = inject(ModalController);
   private syncService = inject(SyncService);
@@ -94,8 +94,26 @@ export class CajaDetailPage implements AfterViewInit {
     return this.box()?.total ?? 0;
   }
 
-  removeRecord(recordId: number) {
-    this.boxesService.removeRecordFromBox(this.boxId, recordId);
+  async removeRecord(recordId: number) { // Make async
+    const alert = await this.alertCtrl.create({
+      header: 'Confirmar eliminación',
+      message: '¿Está seguro que desea eliminar este registro?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'secondary',
+        },
+        {
+          text: 'Eliminar',
+          handler: () => {
+            this.boxesService.removeRecordFromBox(this.boxId, recordId);
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 
   async openModal() {
