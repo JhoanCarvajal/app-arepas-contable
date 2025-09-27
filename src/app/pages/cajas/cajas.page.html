@@ -17,11 +17,6 @@
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Ícono (nombre)</ion-label>
-        <ion-input [(ngModel)]="newIcon" placeholder="cube-outline"></ion-input>
-      </ion-item>
-
-      <ion-item>
         <ion-label position="stacked">Total inicial (opcional)</ion-label>
         <ion-input type="number" [(ngModel)]="newTotal" placeholder="0"></ion-input>
       </ion-item>
@@ -33,7 +28,6 @@
   </ion-card>
 
   <ion-list>
-    <!-- TODO: evitar que cuando se elimine una caja se navegue a la misma -->
     <ion-item *ngFor="let box of boxes" (click)="goToBoxDetail(box.id)">
       <ion-icon [name]="box.icon" slot="start"></ion-icon>
       <ion-label>
