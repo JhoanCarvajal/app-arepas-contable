@@ -72,4 +72,17 @@
 
 ion-item {
   --min-height: 70px;
+  --inner-border-width: 0;
+}
+
+ion-grid {
+  padding: 5px 0;
+}
+
+ion-col:nth-child(2) {
+  padding-left: 0;
+}
+
+ion-col:last-child {
+  padding-right: 0;
 }
