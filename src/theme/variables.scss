@@ -64,6 +64,74 @@
 	--ion-color-blue-light-ac-tint: #4947d2;
 }
 
+// /* Light Theme (Default) - Modern, Clean, Minimalist with Purple Toolbar */
+// :root {
+//     --ion-background-color: #ffffff;
+//     --ion-background-color-rgb: 255,255,255;
+//     --ion-text-color: #222428;
+//     --ion-text-color-rgb: 34,36,40;
+//     --ion-backdrop-color: rgba(0, 0, 0, 0.3);
+//     --ion-backdrop-opacity: 0.3;
+//     --ion-overlay-background-color: rgba(255, 255, 255, 0.9);
+//     --ion-border-color: #e0e0e0;
+//     --ion-box-shadow-color: rgba(0, 0, 0, 0.1);
+
+//     --ion-tab-bar-background: #ffffff;
+//     --ion-tab-bar-background-focused: #f0f0f0;
+//     --ion-tab-bar-border-color: #e0e0e0;
+//     --ion-tab-bar-color: #666666;
+//     --ion-tab-bar-color-selected: var(--ion-color-purple-ac);
+
+//     --ion-toolbar-background: var(--ion-color-purple-ac-contrast);
+//     --ion-toolbar-border-color: var(--ion-color-purple-ac-shade);
+//     --ion-toolbar-color: var(--ion-color-purple-ac);
+//     --ion-toolbar-segment-color: var(--ion-color-purple-ac);
+//     --ion-toolbar-segment-color-checked: var(--ion-color-yellow-ac);
+//     --ion-toolbar-segment-background: var(--ion-color-purple-ac-shade);
+//     --ion-toolbar-segment-background-checked: var(--ion-color-purple-ac-tint);
+//     --ion-toolbar-segment-indicator-color: var(--ion-color-yellow-ac);
+
+//     --ion-item-background: #ffffff;
+//     --ion-item-border-color: #e0e0e0;
+//     --ion-item-color: var(--ion-text-color);
+//     --ion-placeholder-color: #929292;
+
+// }
+
+// /* Dark Theme */
+// .ion-palette-dark {
+//     --ion-background-color: var(--ion-color-blue-dark-ac);
+//     --ion-background-color-rgb: var(--ion-color-blue-dark-ac-rgb);
+//     --ion-text-color: var(--ion-color-blue-dark-ac-contrast); /* White */
+//     --ion-text-color-rgb: var(--ion-color-blue-dark-ac-contrast-rgb); /* 255,255,255 */
+//     --ion-backdrop-color: rgba(0, 0, 0, 0.7);
+//     --ion-backdrop-opacity: 0.7;
+//     --ion-overlay-background-color: rgba(19, 19, 78, 0.9); /* blue-dark-ac with transparency */
+//     --ion-border-color: var(--ion-color-blue-light-ac-shade);
+//     --ion-box-shadow-color: rgba(0, 0, 0, 0.5);
+
+//     --ion-tab-bar-background: var(--ion-color-blue-dark-ac);
+//     --ion-tab-bar-background-focused: var(--ion-color-blue-dark-ac-tint);
+//     --ion-tab-bar-border-color: var(--ion-color-blue-light-ac-shade);
+//     --ion-tab-bar-color: rgba(255, 255, 255, 0.7); /* Light gray for inactive */
+//     --ion-tab-bar-color-selected: var(--ion-color-purple-ac);
+
+//     --ion-toolbar-background: var(--ion-color-purple-ac-contrast);
+//     --ion-toolbar-border-color: var(--ion-color-purple-ac-shade);
+//     --ion-toolbar-color: var(--ion-color-purple-ac);
+//     --ion-toolbar-segment-color: var(--ion-color-purple-ac);
+//     --ion-toolbar-segment-color-checked: var(--ion-color-yellow-ac);
+//     --ion-toolbar-segment-background: var(--ion-color-purple-ac-shade);
+//     --ion-toolbar-segment-background-checked: var(--ion-color-purple-ac-tint);
+//     --ion-toolbar-segment-indicator-color: var(--ion-color-yellow-ac);
+
+//     --ion-item-background: var(--ion-color-blue-dark-ac-tint);
+//     --ion-item-border-color: var(--ion-background-color-step-300);
+//     --ion-item-color: var(--ion-text-color);
+//     --ion-placeholder-color: rgba(255, 255, 255, 0.5);
+// }
+
+/* Custom color classes */
 .ion-color-blue-light-ac {
 	--ion-color-base: var(--ion-color-blue-light-ac);
 	--ion-color-base-rgb: var(--ion-color-blue-light-ac-rgb);
@@ -107,3 +175,18 @@ html {
 ion-modal {
   --ion-safe-area-top: 0;
 }
+
+// .button-solid {
+//   --background-focused: var(--ion-color-purple-ac-shade);
+//   --background-hover: var(--ion-color-purple-ac-tint); 
+//   --background: var(--ion-color-purple-ac);
+//   --color: var(--ion-color-purple-ac-contrast);
+// }
+
+// .button-outline {
+//   --border-color: var(--ion-color-purple-ac);
+//   --color: var(--ion-color-purple-ac);
+//   --background: transparent;
+//   --background-hover: var(--ion-color-purple-ac-tint);
+//   --background-focused: var(--ion-color-purple-ac-shade);
+// }
