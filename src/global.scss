@@ -37,3 +37,20 @@
 // @import '@ionic/angular/css/palettes/dark.system.css'; 
 
 
+html {
+    --ion-safe-area-left: 0;
+    --ion-safe-area-right: 0;
+    --ion-safe-area-top: 0;
+    --ion-safe-area-bottom: 0;
+}
+
+ion-modal {
+    --ion-safe-area-top: 0;
+}
+
+@media screen and (min-width: 1000px) and (min-height: 1000px) {
+    .ac-modal {
+        --width: 800px;
+        --height: 840px;
+    }
+}

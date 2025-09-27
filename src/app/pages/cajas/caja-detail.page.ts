@@ -5,14 +5,50 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import Chart from 'chart.js/auto';
 import { BoxesService, Box, BoxRecord } from '../../services/boxes.service';
 import { computed, effect } from '@angular/core';
-import { ToastController, AlertController, ModalController } from '@ionic/angular/standalone';
+import {
+  ToastController,
+  AlertController,
+  ModalController,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonBackButton,
+  IonTitle,
+  IonContent,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonButton,
+  IonIcon,
+} from '@ionic/angular/standalone';
 import { NewRecordModalComponent } from './new-record-modal.component';
 import { SyncService } from '../../services/sync.service';
 
 @Component({
   standalone: true,
-  imports: [DecimalPipe, IonicModule, RouterModule],
+  imports: [
+    DecimalPipe,
+    RouterModule,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonBackButton,
+    IonTitle,
+    IonContent,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonButton,
+    IonIcon,
+  ],
   templateUrl: './caja-detail.page.html',
+  styleUrls: ['./caja-detail.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CajaDetailPage implements AfterViewInit {
@@ -116,19 +152,6 @@ export class CajaDetailPage implements AfterViewInit {
     await alert.present();
   }
 
-  async openModal() {
-    const modal = await this.modalCtrl.create({
-      component: NewRecordModalComponent,
-    });
-    modal.present();
-
-    const { data, role } = await modal.onWillDismiss();
-
-    if (role === 'confirm') {
-      this.message = `Hello, ${data}!`;
-    }
-  }
-
   async openAddRecord(type: 'ingreso' | 'egreso') {
     const modal = await this.modalCtrl.create({
       component: NewRecordModalComponent,
@@ -136,6 +159,7 @@ export class CajaDetailPage implements AfterViewInit {
         type,
         boxId: this.boxId,
       },
+      cssClass: 'ac-modal',
     });
 
     await modal.present();

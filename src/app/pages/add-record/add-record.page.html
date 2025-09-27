@@ -24,6 +24,7 @@
           labelPlacement="stacked"
           type="number"
           placeholder="1250.00"
+          fill="outline"
           [required]="true"
           (ionInput)="handleInput($event, dailyEarnings)"
           [value]="dailyEarnings()">
@@ -57,12 +58,12 @@
                 <ion-col size="12" size-sm="5"><ion-label>Gastos de Maíz</ion-label></ion-col>
                 <ion-col size="6" size-sm="3.5">
                     <ion-item class="rounded-small" lines="none">
-                      <ion-input type="number" placeholder="Cant." (ionInput)="handleInput($event, cornBags)" [value]="cornBags()"></ion-input>
+                      <ion-input type="number" placeholder="Cant." fill="outline" (ionInput)="handleInput($event, cornBags)" [value]="cornBags()"></ion-input>
                     </ion-item>
                 </ion-col>
                 <ion-col size="6" size-sm="3.5">
                     <ion-item class="rounded-small" lines="none">
-                      <ion-input type="number" placeholder="Precio" (ionInput)="handleInput($event, cornPrice)" [value]="cornPrice()"><div slot="start">$</div></ion-input>
+                      <ion-input type="number" placeholder="Precio" fill="outline" (ionInput)="handleInput($event, cornPrice)" [value]="cornPrice()"><div slot="start">$</div></ion-input>
                     </ion-item>
                 </ion-col>
             </ion-row>
@@ -74,31 +75,31 @@
                 <ion-col size="12" size-sm="5"><ion-label>Gastos de Carbón</ion-label></ion-col>
                 <ion-col size="6" size-sm="3.5">
                     <ion-item class="rounded-small" lines="none">
-                      <ion-input type="number" placeholder="Cant." (ionInput)="handleInput($event, charcoalBags)" [value]="charcoalBags()"></ion-input>
+                      <ion-input type="number" placeholder="Cant." fill="outline" (ionInput)="handleInput($event, charcoalBags)" [value]="charcoalBags()"></ion-input>
                     </ion-item>
                 </ion-col>
                 <ion-col size="6" size-sm="3.5">
                     <ion-item class="rounded-small" lines="none">
-                      <ion-input type="number" placeholder="Precio" (ionInput)="handleInput($event, charcoalPrice)" [value]="charcoalPrice()"><div slot="start">$</div></ion-input>
+                      <ion-input type="number" placeholder="Precio" fill="outline" (ionInput)="handleInput($event, charcoalPrice)" [value]="charcoalPrice()"><div slot="start">$</div></ion-input>
                     </ion-item>
                 </ion-col>
             </ion-row>
         </ion-grid>
       </ion-item>
       <ion-item class="rounded-input">
-        <ion-input label="Gastos Generales" labelPlacement="stacked" type="number" placeholder="Total" (ionInput)="handleInput($event, generalExpenses)" [value]="generalExpenses()"><div slot="start">$</div></ion-input>
+        <ion-input label="Gastos Generales" labelPlacement="stacked" type="number" placeholder="Total" fill="outline" (ionInput)="handleInput($event, generalExpenses)" [value]="generalExpenses()"><div slot="start">$</div></ion-input>
       </ion-item>
       <ion-item class="rounded-input">
-        <ion-input label="Gastos de Operación" labelPlacement="stacked" type="number" placeholder="Total" (ionInput)="handleInput($event, operatingExpenses)" [value]="operatingExpenses()"><div slot="start">$</div></ion-input>
+        <ion-input label="Gastos de Operación" labelPlacement="stacked" type="number" placeholder="Total" fill="outline" (ionInput)="handleInput($event, operatingExpenses)" [value]="operatingExpenses()"><div slot="start">$</div></ion-input>
       </ion-item>
       <ion-item class="rounded-input">
-        <ion-input label="Gasto de los Trabajadores" labelPlacement="stacked" type="number" placeholder="Total" (ionInput)="handleInput($event, workerExpenses)" [value]="workerExpenses()"><div slot="start">$</div></ion-input>
+        <ion-input label="Gasto de los Trabajadores" labelPlacement="stacked" type="number" placeholder="Total" fill="outline" (ionInput)="handleInput($event, workerExpenses)" [value]="workerExpenses()"><div slot="start">$</div></ion-input>
       </ion-item>
       <ion-item class="rounded-input">
-        <ion-input label="Gasto del Arriendo" labelPlacement="stacked" type="number" placeholder="Total" (ionInput)="handleInput($event, rentExpenses)" [value]="rentExpenses()"><div slot="start">$</div></ion-input>
+        <ion-input label="Gasto del Arriendo" labelPlacement="stacked" type="number" placeholder="Total" fill="outline" (ionInput)="handleInput($event, rentExpenses)" [value]="rentExpenses()"><div slot="start">$</div></ion-input>
       </ion-item>
       <ion-item class="rounded-input">
-        <ion-input label="Gastos de las Motos" labelPlacement="stacked" type="number" placeholder="Total" (ionInput)="handleInput($event, motorcycleExpenses)" [value]="motorcycleExpenses()"><div slot="start">$</div></ion-input>
+        <ion-input label="Gastos de las Motos" labelPlacement="stacked" type="number" placeholder="Total" fill="outline" (ionInput)="handleInput($event, motorcycleExpenses)" [value]="motorcycleExpenses()"><div slot="start">$</div></ion-input>
       </ion-item>
     </ion-list>
     

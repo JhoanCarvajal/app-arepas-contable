@@ -1,71 +1,75 @@
-:host {
-  /* Ajusta tonos según tu tema */
-  --boxes-item-bg: rgba(0,0,0,0.07);
-  --boxes-item-bg-focus: rgba(59,130,246,0.08); /* azul tenue al enfocar */
-}
+// :host {
+//   /* Ajusta tonos según tu tema */
+//   --boxes-item-bg: rgba(0,0,0,0.07);
+//   --boxes-item-bg-focus: rgba(59,130,246,0.08); /* azul tenue al enfocar */
+// }
 
-/* Items principales con borde redondeado y fondo ligeramente más oscuro */
-ion-item.rounded-input,
-ion-item.rounded-small {
-  --background: var(--boxes-item-bg);
-  border-radius: 12px;
-  margin: 8px 0;
-  padding-left: 12px;
-  padding-right: 12px;
-  --inner-padding-top: 8px;
-  --inner-padding-bottom: 8px;
-  transition: box-shadow 120ms ease, transform 120ms ease;
-}
+// /* Items principales con borde redondeado y fondo ligeramente más oscuro */
+// ion-item.rounded-input,
+// ion-item.rounded-small {
+//   --background: var(--boxes-item-bg);
+//   border-radius: 12px;
+//   margin: 8px 0;
+//   padding-left: 12px;
+//   padding-right: 12px;
+//   --inner-padding-top: 8px;
+//   --inner-padding-bottom: 8px;
+//   transition: box-shadow 120ms ease, transform 120ms ease;
+// }
 
-/* Variante más compacta para los inputs pequeños en la grid */
-ion-item.rounded-small {
-  border-radius: 8px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-}
+// /* Variante más compacta para los inputs pequeños en la grid */
+// ion-item.rounded-small {
+//   border-radius: 8px;
+//   padding-top: 6px;
+//   padding-bottom: 6px;
+// }
 
-/* Sombra sutil / outline al enfocar campos */
-ion-item.rounded-input:focus-within,
-ion-item.rounded-small:focus-within {
-  box-shadow: 0 0 0 4px var(--boxes-item-bg-focus);
-  transform: translateY(-1px);
-}
+// /* Sombra sutil / outline al enfocar campos */
+// ion-item.rounded-input:focus-within,
+// ion-item.rounded-small:focus-within {
+//   box-shadow: 0 0 0 4px var(--boxes-item-bg-focus);
+//   transform: translateY(-1px);
+// }
 
-/* Asegura que el input nativo use fondo transparente (el fondo lo aporta ion-item) */
-ion-input::part(native),
-ion-datetime::part(native),
-ion-textarea::part(native) {
-  background: transparent;
-  color: inherit;
-}
+// /* Asegura que el input nativo use fondo transparente (el fondo lo aporta ion-item) */
+// ion-input::part(native),
+// ion-datetime::part(native),
+// ion-textarea::part(native) {
+//   background: transparent;
+//   color: inherit;
+// }
 
-/* Estilo para el input de dinero (clase existente money-input) */
-ion-input.money-input::part(native) {
-  text-align: right;
-  font-weight: 600;
-}
+// /* Estilo para el input de dinero (clase existente money-input) */
+// ion-input.money-input::part(native) {
+//   text-align: right;
+//   font-weight: 600;
+// }
 
-/* Ajustes para labels dentro de los items redondeados */
-ion-item.rounded-input ion-label,
-ion-item.rounded-small ion-label {
-  margin: 0;
-}
+// /* Ajustes para labels dentro de los items redondeados */
+// ion-item.rounded-input ion-label,
+// ion-item.rounded-small ion-label {
+//   margin: 0;
+// }
 
-/* Pequeño espaciado en el card resumen */
-ion-card.ion-margin {
-  --background: transparent;
-}
+// /* Pequeño espaciado en el card resumen */
+// ion-card.ion-margin {
+//   --background: transparent;
+// }
 
-/* Responsive: reducir radio en pantallas pequeñas */
-@media (max-width: 420px) {
-  ion-item.rounded-input {
-    border-radius: 10px;
-    margin: 6px 0;
-  }
+// /* Responsive: reducir radio en pantallas pequeñas */
+// @media (max-width: 420px) {
+//   ion-item.rounded-input {
+//     border-radius: 10px;
+//     margin: 6px 0;
+//   }
 
-  ion-item.rounded-small {
-    border-radius: 6px;
-    padding-top: 4px;
-    padding-bottom: 4px;
-  }
+//   ion-item.rounded-small {
+//     border-radius: 6px;
+//     padding-top: 4px;
+//     padding-bottom: 4px;
+//   }
+// }
+
+ion-item {
+  --min-height: 70px;
 }
