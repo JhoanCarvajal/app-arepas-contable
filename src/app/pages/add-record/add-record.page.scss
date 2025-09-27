@@ -1,46 +1,71 @@
-.page-add-record {
-  padding: 16px;
+:host {
+  /* Ajusta tonos según tu tema */
+  --boxes-item-bg: rgba(0,0,0,0.07);
+  --boxes-item-bg-focus: rgba(59,130,246,0.08); /* azul tenue al enfocar */
+}
 
+/* Items principales con borde redondeado y fondo ligeramente más oscuro */
+ion-item.rounded-input,
+ion-item.rounded-small {
+  --background: var(--boxes-item-bg);
+  border-radius: 12px;
+  margin: 8px 0;
+  padding-left: 12px;
+  padding-right: 12px;
+  --inner-padding-top: 8px;
+  --inner-padding-bottom: 8px;
+  transition: box-shadow 120ms ease, transform 120ms ease;
+}
+
+/* Variante más compacta para los inputs pequeños en la grid */
+ion-item.rounded-small {
+  border-radius: 8px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+/* Sombra sutil / outline al enfocar campos */
+ion-item.rounded-input:focus-within,
+ion-item.rounded-small:focus-within {
+  box-shadow: 0 0 0 4px var(--boxes-item-bg-focus);
+  transform: translateY(-1px);
+}
+
+/* Asegura que el input nativo use fondo transparente (el fondo lo aporta ion-item) */
+ion-input::part(native),
+ion-datetime::part(native),
+ion-textarea::part(native) {
+  background: transparent;
+  color: inherit;
+}
+
+/* Estilo para el input de dinero (clase existente money-input) */
+ion-input.money-input::part(native) {
+  text-align: right;
+  font-weight: 600;
+}
+
+/* Ajustes para labels dentro de los items redondeados */
+ion-item.rounded-input ion-label,
+ion-item.rounded-small ion-label {
+  margin: 0;
+}
+
+/* Pequeño espaciado en el card resumen */
+ion-card.ion-margin {
+  --background: transparent;
+}
+
+/* Responsive: reducir radio en pantallas pequeñas */
+@media (max-width: 420px) {
   ion-item.rounded-input {
-    --background: #f6f9fb;
-    --border-radius: 12px;
-    --border-color: rgba(34, 47, 62, 0.06);
-    --min-height: 56px;
-    margin: 10px 0;
-    align-items: center;
+    border-radius: 10px;
+    margin: 6px 0;
   }
 
   ion-item.rounded-small {
-    --background: #f6f9fb;
-    --border-radius: 10px;
-    --border-color: rgba(34, 47, 62, 0.06);
-    --min-height: 44px;
-    padding: 4px 8px;
-  }
-
-  ion-input,
-  ion-datetime-button {
-    --padding-start: 10px;
-    --padding-end: 10px;
-    --placeholder-color: #9aa3ad;
-    font-size: 15px;
-  }
-
-  /* Alinear el prefijo $ y dar espacio */
-  ion-input div[slot="start"] {
-    margin-right: 8px;
-    color: #3b4a57;
-    font-weight: 600;
-  }
-
-  ion-card .ion-text h2 {
-    font-size: 20px;
-    font-weight: 700;
-  }
-}
-/* pequeños ajustes responsive si se necesita */
-@media (min-width: 768px) {
-  .page-add-record {
-    padding: 24px 48px;
+    border-radius: 6px;
+    padding-top: 4px;
+    padding-bottom: 4px;
   }
 }

@@ -29,6 +29,7 @@ import { FinanceService, Submission } from '../../services/finance.service';
 
 @Component({
   templateUrl: './add-record.page.html',
+  styleUrls: ['./add-record.page.scss'],
   imports: [
     CommonModule, 
     FormsModule,
