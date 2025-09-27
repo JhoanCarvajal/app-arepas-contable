@@ -40,7 +40,9 @@
             @if (r.note) {<p>Nota: {{ r.note }}</p>}
             <p class="ion-text-wrap">Total: ${{ r.total | number:'1.0-0' }}</p>
           </ion-label>
-          <ion-button fill="clear" color="danger" slot="end" (click)="removeRecord(r.id)">Eliminar</ion-button>
+          <ion-button fill="clear" color="danger" slot="end" size="default" (click)="removeRecord(r.id)">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-button>
         </ion-item>
     }
 
