@@ -1,8 +1,8 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
-import { RouterModule, Router } from '@angular/router'; // Import Router
-import { BoxesService, BoxRecord } from '../../services/boxes.service';
+import { RouterModule, Router } from '@angular/router';
+import { BoxesService, BoxControl } from '../../services/boxes.service'; // Import BoxControl
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { cubeOutline, trashOutline } from 'ionicons/icons';
@@ -17,12 +17,13 @@ import { AlertController } from '@ionic/angular/standalone';
 export class CajasPage {
   private boxesService = inject(BoxesService);
   private alertController = inject(AlertController);
-  private router = inject(Router); // Inject Router
+  private router = inject(Router);
 
   // campos del formulario simple
   newName = '';
   newIcon = 'cube-outline';
   newTotal: number | null = null;
+  cantPriceFields = false; // Add this property
 
   constructor() {
     addIcons({ cubeOutline, trashOutline });
@@ -37,28 +38,27 @@ export class CajasPage {
     const name = (this.newName || '').trim();
     if (!name) return;
 
-    // crear la caja en cero
     const createdBox = await this.boxesService.addBox({
       name,
       icon: this.newIcon,
       total: 0,
+      cantPriceFields: this.cantPriceFields,
     });
 
-    // agregar un registro inicial si aplica
-    // si el total es un numero valido, despues de crear la caja, crear un ingreso inicial
     if (this.newTotal && !isNaN(this.newTotal) && this.newTotal > 0) {
-        const newRecord: Partial<BoxRecord> = {
+        const newControl: Partial<BoxControl> = {
             origin: 'base',
             total: this.newTotal,
             note: 'Ingreso inicial',
         };
-        await this.boxesService.addRecordToBox(createdBox.id, newRecord);
+        await this.boxesService.addControlToBox(createdBox.id, newControl);
     }
 
     // reset form
     this.newName = '';
     this.newIcon = 'cube-outline';
     this.newTotal = null;
+    this.cantPriceFields = false;
   }
 
   async deleteBox(event: any, id: number) {

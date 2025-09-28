@@ -73,7 +73,7 @@ export class CajaDetailPage implements AfterViewInit {
   });
 
   ionViewWillEnter() {
-    this.syncService.syncBoxRecords(this.boxId);
+    this.syncService.syncBoxControls(this.boxId);
   }
 
   ngAfterViewInit(): void {

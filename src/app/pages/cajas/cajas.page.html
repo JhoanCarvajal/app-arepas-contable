@@ -21,6 +21,11 @@
         <ion-input type="number" [(ngModel)]="newTotal" placeholder="0"></ion-input>
       </ion-item>
 
+      <ion-item>
+        <ion-label>No usar Cantidad y Precio</ion-label>
+        <ion-checkbox [(ngModel)]="cantPriceFields"></ion-checkbox>
+      </ion-item>
+
       <div class="ion-margin-top">
         <ion-button expand="block" (click)="createBox()">Crear caja</ion-button>
       </div>

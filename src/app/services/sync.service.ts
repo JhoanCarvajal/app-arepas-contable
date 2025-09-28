@@ -1,122 +1,96 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
-import { BoxesService, BoxRecord, Box } from './boxes.service'; // Import Box
-import { FinanceService, Submission } from './finance.service'; // Import Submission
+import { BoxesService, BoxControl, Box } from './boxes.service';
+import { ExpensesService, Expense } from './expenses.service';
 import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { Network } from '@capacitor/network';
-// Removed: import { HttpClient } from '@angular/common/http'; // Import HttpClient for API ping
 
 @Injectable({
   providedIn: 'root'
 })
 export class SyncService {
+  private apiService = inject(ApiService);
+  private boxesService = inject(BoxesService);
+  private expensesService = inject(ExpensesService);
 
-  constructor(
-    private apiService: ApiService,
-    private boxesService: BoxesService,
-    private financeService: FinanceService,
-    // Removed: private http: HttpClient // Inject HttpClient
-  ) { }
+  constructor() { }
 
-  // Removed: isOnlineAndApiAvailable method
-
-  // Helper function to parse and format dates to YYYY-MM-DD
+  // The date cleanup logic can be removed after the user runs it once.
+  // For now, I'll leave it in case it's needed again, but with correct typings.
   private _parseAndFormatDateToYYYYMMDD(dateStr: string): string {
-    // If it's already YYYY-MM-DD, return it
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
       return dateStr;
     }
-
-    // Try to parse as ISO string first (e.g., from createdAt)
     if (dateStr.includes('T') && dateStr.includes('Z')) {
       try {
         return new Date(dateStr).toISOString().split('T')[0];
-      } catch (e) {
-        // Fallback to other parsing
-      }
+      } catch (e) { /* fallback */ }
     }
-
     const monthMap: { [key: string]: string } = {
       'enero': 'January', 'febrero': 'February', 'marzo': 'March', 'abril': 'April',
       'mayo': 'May', 'junio': 'June', 'julio': 'July', 'agosto': 'August',
-      'septiembre': 'September', 'octubre': 'October',
-      'noviembre': 'November', 'diciembre': 'December'
+      'septiembre': 'September', 'octubre': 'October', 'noviembre': 'November', 'diciembre': 'December'
     };
-
     const lowerDateStr = dateStr.toLowerCase();
     for (const monthSp in monthMap) {
       if (lowerDateStr.includes(monthSp)) {
-        // Handles "10 de septiembre de 2025" -> "10 September 2025"
         const dateWithEnMonth = lowerDateStr.replace(monthSp, monthMap[monthSp]).replace(/ de /g, ' ');
         try {
           return new Date(dateWithEnMonth).toISOString().split('T')[0];
-        } catch (e) {
-          // Continue to next fallback
-        }
+        } catch (e) { /* fallback */ }
       }
     }
-
-    // Handles "DD/MM/YYYY" or "D/M/YYYY"
     if (dateStr.includes('/')) {
       const parts = dateStr.split('/');
       if (parts.length === 3) {
         const [day, month, year] = parts;
         try {
-          // new Date(year, monthIndex, day)
           return new Date(Number(year), Number(month) - 1, Number(day)).toISOString().split('T')[0];
-        } catch (e) {
-          // Continue to next fallback
-        }
+        } catch (e) { /* fallback */ }
       }
     }
-
-    // Final fallback: try to parse directly and return YYYY-MM-DD
     try {
       return new Date(dateStr).toISOString().split('T')[0];
     } catch (e) {
       console.warn(`Could not parse date for cleanup: ${dateStr}. Returning current date.`);
-      return new Date().toISOString().split('T')[0]; // Return current date as a last resort
+      return new Date().toISOString().split('T')[0];
     }
   }
 
   async cleanDatesInLocalStorage(): Promise<void> {
     console.log('Starting date cleanup in localStorage...');
 
-    // Clean History Dates
-    const currentHistory = this.financeService.getAll();
-    const cleanedHistory: Submission[] = currentHistory.map(item => {
+    const currentExpenses = this.expensesService.getAll();
+    const cleanedExpenses: Expense[] = currentExpenses.map((item: Expense) => {
       const cleanedDate = this._parseAndFormatDateToYYYYMMDD(item.date);
       if (item.date !== cleanedDate) {
-        console.log(`Cleaned history date: "${item.date}" -> "${cleanedDate}"`);
+        console.log(`Cleaned expense date: "${item.date}" -> "${cleanedDate}"`);
       }
       return { ...item, date: cleanedDate };
     });
-    this.financeService.history.set(cleanedHistory);
-    this.financeService['saveToLocalStorage'](); // Access private method
+    this.expensesService.expenses.set(cleanedExpenses);
+    this.expensesService['saveToLocalStorage']();
 
-    // Clean Box Records Dates
     const currentBoxes = this.boxesService.getAll();
     const cleanedBoxes: Box[] = currentBoxes.map(box => {
-      const cleanedRecords: BoxRecord[] = box.records.map(record => {
-        const cleanedDate = this._parseAndFormatDateToYYYYMMDD(record.date);
-        if (record.date !== cleanedDate) {
-          console.log(`Cleaned box record date: "${record.date}" -> "${cleanedDate}" for box "${box.name}"`);
+      const cleanedControls: BoxControl[] = box.controls.map((control: BoxControl) => {
+        const cleanedDate = this._parseAndFormatDateToYYYYMMDD(control.date);
+        if (control.date !== cleanedDate) {
+          console.log(`Cleaned box control date: "${control.date}" -> "${cleanedDate}" for box "${box.name}"`);
         }
-        return { ...record, date: cleanedDate };
+        return { ...control, date: cleanedDate };
       });
-      return { ...box, records: cleanedRecords };
+      return { ...box, controls: cleanedControls };
     });
     this.boxesService.boxes.set(cleanedBoxes);
-    this.boxesService['saveToLocalStorage'](); // Access private method
+    this.boxesService['saveToLocalStorage']();
 
     console.log('Date cleanup in localStorage complete!');
   }
 
   async syncData() {
-    const status = await Network.getStatus();
-    if (!status.connected) {
-      console.log('No network connection. Skipping sync.');
+    if (!await this.apiService.isOnlineAndApiAvailable()) {
+      console.log('Offline or API not available. Skipping sync.');
       return;
     }
 
@@ -124,50 +98,45 @@ export class SyncService {
     forkJoin({
       apiBoxes: this.apiService.getBoxes(),
       localBoxes: of(this.boxesService.getAll()),
-      apiHistory: this.apiService.getHistory(),
-      localHistory: of(this.financeService.getAll())
+      apiExpenses: this.apiService.getExpenses(),
+      localExpenses: of(this.expensesService.getAll())
     }).pipe(
-      switchMap(({ apiBoxes, localBoxes, apiHistory, localHistory }) => {
+      switchMap(({ apiBoxes, localBoxes, apiExpenses, localExpenses }) => {
         const syncTasks: any[] = [];
 
-        // Sync Boxes (Local to API)
         const boxesToCreate = localBoxes.filter(local => !apiBoxes.find(remote => remote.id === local.id));
         boxesToCreate.forEach(box => {
           console.log(`Syncing local box to API: ${box.name}`);
           syncTasks.push(this.apiService.createBox(box));
         });
 
-        // Sync Boxes (API to Local)
         const boxesToAddToLocal = apiBoxes.filter(remote => !localBoxes.find(local => local.id === remote.id));
         if (boxesToAddToLocal.length > 0) {
-            this.boxesService.addBoxes(boxesToAddToLocal);
+          this.boxesService.addBoxes(boxesToAddToLocal);
         }
 
-        // Sync History (Local to API)
-        const historyToCreate = localHistory.filter(local => !apiHistory.find(remote => remote.id === local.id));
-        historyToCreate.forEach(item => {
-          console.log(`Syncing local history to API: ${item.date}`);
-          syncTasks.push(this.apiService.createHistory(item));
+        const expensesToCreate = localExpenses.filter(local => !apiExpenses.find(remote => remote.id === local.id));
+        expensesToCreate.forEach((item: Expense) => {
+          console.log(`Syncing local expense to API: ${item.date}`);
+          syncTasks.push(this.apiService.createExpense(item));
         });
 
-        // Sync History (API to Local)
-        const historyToAddToLocal = apiHistory.filter(remote => !localHistory.find(local => local.id === remote.id));
-        if (historyToAddToLocal.length > 0) {
-            this.financeService.addRecords(historyToAddToLocal);
+        const expensesToAddToLocal = apiExpenses.filter(remote => !localExpenses.find(local => local.id === remote.id));
+        if (expensesToAddToLocal.length > 0) {
+          this.expensesService.addExpenses(expensesToAddToLocal);
         }
 
         return syncTasks.length > 0 ? forkJoin(syncTasks) : of(null);
       })
     ).subscribe({
       next: () => console.log('Synchronization complete!'),
-      error: err => console.error('Synchronization failed:', err)
+      error: (err: any) => console.error('Synchronization failed:', err)
     });
   }
 
-  async syncBoxRecords(boxId: number) {
-    const status = await Network.getStatus();
-    if (!status.connected) {
-      console.log('No network connection. Skipping box records sync.');
+  async syncBoxControls(boxId: number) {
+    if (!await this.apiService.isOnlineAndApiAvailable()) {
+      console.log('Offline or API not available. Skipping box controls sync.');
       return;
     }
 
@@ -177,34 +146,32 @@ export class SyncService {
       return;
     }
 
-    console.log(`Starting synchronization for records of box: ${localBox.name}`);
+    console.log(`Starting synchronization for controls of box: ${localBox.name}`);
 
-    this.apiService.getRecordsForBox(boxId).pipe(
-      switchMap(apiRecords => {
-        const localRecords = localBox.records;
+    this.apiService.getBoxControlsForBox(boxId).pipe(
+      switchMap(apiControls => {
+        const localControls = localBox.controls;
         const syncTasks: any[] = [];
 
-        // Sync Local records to API
-        const recordsToCreate = localRecords.filter(local => !apiRecords.find(remote => remote.id === local.id));
-        recordsToCreate.forEach(record => {
-          console.log(`Syncing local record to API: ${record.id}`);
-          syncTasks.push(this.apiService.createRecord(record));
+        const controlsToCreate = localControls.filter(local => !apiControls.find(remote => remote.id === local.id));
+        controlsToCreate.forEach((control: BoxControl) => {
+          console.log(`Syncing local control to API: ${control.id}`);
+          syncTasks.push(this.apiService.createBoxControl(control));
         });
 
-        // Sync API records to Local
-        const recordsToAddToLocal = apiRecords.filter(remote => !localRecords.find(local => local.id === remote.id));
-        if (recordsToAddToLocal.length > 0) {
-          console.log(`Syncing ${recordsToAddToLocal.length} API records to local.`);
-          recordsToAddToLocal.forEach((record: BoxRecord) => {
-            this.boxesService.addRecordToBoxLocal(boxId, record);
+        const controlsToAddToLocal = apiControls.filter(remote => !localControls.find(local => local.id === remote.id));
+        if (controlsToAddToLocal.length > 0) {
+          console.log(`Syncing ${controlsToAddToLocal.length} API controls to local.`);
+          controlsToAddToLocal.forEach((control: BoxControl) => {
+            this.boxesService.addControlToBoxLocal(boxId, control);
           });
         }
 
         return syncTasks.length > 0 ? forkJoin(syncTasks) : of(null);
       })
     ).subscribe({
-      next: () => console.log(`Record synchronization complete for box: ${localBox.name}`),
-      error: err => console.error(`Record synchronization failed for box: ${localBox.name}`, err)
+      next: () => console.log(`Control synchronization complete for box: ${localBox.name}`),
+      error: (err: any) => console.error(`Control synchronization failed for box: ${localBox.name}`, err)
     });
   }
 }
