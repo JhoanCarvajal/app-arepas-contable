@@ -51,11 +51,15 @@ export class ApiService {
   }
 
   createBoxControl(control: any): Observable<any> {
-    return this.http.post<any>(`${this.API_URL}/boxcontrols/`, control);
+    const { boxId, ...rest } = control;
+    const payload = { ...rest, box: boxId };
+    return this.http.post<any>(`${this.API_URL}/boxcontrols/`, payload);
   }
 
   updateBoxControl(id: number, control: any): Observable<any> {
-    return this.http.put<any>(`${this.API_URL}/boxcontrols/${id}/`, control);
+    const { boxId, ...rest } = control;
+    const payload = { ...rest, box: boxId };
+    return this.http.put<any>(`${this.API_URL}/boxcontrols/${id}/`, payload);
   }
 
   deleteBoxControl(id: number): Observable<any> {
