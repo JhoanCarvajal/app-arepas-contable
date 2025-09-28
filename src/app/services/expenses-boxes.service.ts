@@ -58,8 +58,8 @@ export class ExpensesBoxesService {
 
   async addExpenseBox(expenseBox: Partial<ExpenseBox>) {
     const newExpenseBox: ExpenseBox = {
-      id: this.generateUniqueId(),
       ...expenseBox,
+      id: this.generateUniqueId(),
     } as ExpenseBox;
     const updated = [newExpenseBox, ...this.expensesBoxes()];
     this.expensesBoxes.set(updated);

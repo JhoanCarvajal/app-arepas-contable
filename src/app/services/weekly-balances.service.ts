@@ -58,8 +58,8 @@ export class WeeklyBalancesService {
 
   async addWeeklyBalance(balance: Partial<WeeklyBalance>) {
     const newBalance: WeeklyBalance = {
-      id: this.generateUniqueId(),
       ...balance,
+      id: this.generateUniqueId(),
     } as WeeklyBalance;
     const updated = [newBalance, ...this.weeklyBalances()];
     this.weeklyBalances.set(updated);

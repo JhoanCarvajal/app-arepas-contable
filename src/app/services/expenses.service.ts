@@ -68,9 +68,9 @@ export class ExpensesService {
 
   async addExpense(expense: Partial<Expense>) {
     const newExpense: Expense = {
+      ...expense,
       id: this.generateUniqueId(),
       weeklyBalance: expense.weeklyBalance ?? null, // Handle null for weeklyBalance
-      ...expense,
     } as Expense;
     const updated = [newExpense, ...this.expenses()];
     this.expenses.set(updated);
