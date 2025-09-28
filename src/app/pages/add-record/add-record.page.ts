@@ -194,9 +194,10 @@ export class AddRecordPage implements OnInit, OnDestroy {
         if (field === 'quantity' || field === 'price' || field === 'total') {
           const numericValue = parseFloat(String(value).replace(/,/g, ''));
           control[field] = isNaN(numericValue) ? null : numericValue;
-
+          
           if (control.cantPriceFields && (field === 'quantity' || field === 'price')) {
             control.total = (control.quantity ?? 0) * (control.price ?? 0);
+            control['note'] = `${control.quantity ?? 0} bultos a $${control.price ?? 0}`;
           }
         } else {
           control[field] = value;
