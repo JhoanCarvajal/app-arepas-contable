@@ -28,7 +28,7 @@ import { BoxesService, Box, BoxControl } from '../../services/boxes.service';
 import { ApiService } from '../../services/api.service';
 import { ExpensesBoxesService } from '../../services/expenses-boxes.service'; // Added ExpensesBoxesService
 import { addIcons } from 'ionicons';
-import { settingsOutline, cashOutline, walletOutline } from 'ionicons/icons';
+import { settingsOutline, cashOutline, walletOutline, checkmarkCircle, ellipseOutline } from 'ionicons/icons';
 
 @Component({
   templateUrl: './add-record.page.html',
@@ -67,7 +67,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
   private actionSheetCtrl = inject(ActionSheetController);
 
   constructor() {
-    addIcons({ settingsOutline, cashOutline, walletOutline });
+    addIcons({ settingsOutline, cashOutline, walletOutline, checkmarkCircle, ellipseOutline });
   }
 
   private getTodayISOString(): string {

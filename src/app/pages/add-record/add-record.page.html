@@ -10,11 +10,11 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-header collapse="condense">
+  <!-- <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">Agregar Registro</ion-title>
     </ion-toolbar>
-  </ion-header>
+  </ion-header> -->
 
   <form (ngSubmit)="onSubmit()" #expenseForm="ngForm">
     <ion-list [inset]="true">
@@ -38,6 +38,7 @@
       </ion-item>
     </ion-list>
 
+    <!-- Este es un modal para mostrar el calendario de la fecha del registrok -->
     <ion-modal [keepContentsMounted]="true">
       <ng-template>
         <ion-datetime
@@ -64,40 +65,45 @@
           @let boxId = controlEntry[0];
           @let control = controlEntry[1];
           <ion-item>
-            <ion-label>{{ control.boxName }}</ion-label>
+            <!-- <ion-label>{{ control.boxName }}</ion-label> -->
             <ng-container *ngIf="control.cantPriceFields; else totalOnly">
               <ion-grid>
                 <ion-row class="ion-align-items-center">
-                  <ion-col size="6">
-                    <ion-input type="number" placeholder="Cant." fill="outline"
-                      [value]="control.quantity"
-                      (ionInput)="handleDynamicInput(boxId, 'quantity', $event)">
-                    </ion-input>
+                  <!-- <ion-col size="12" size-sm="5"><ion-label>{{ control.boxName }}</ion-label></ion-col> -->
+                  <ion-col size="4" size-sm="3.5">
+                    <ion-item class="rounded-small" lines="none">
+                      <ion-input label="{{ control.boxName }}" labelPlacement="stacked" type="number" placeholder="Cant." fill="outline"
+                        [value]="control.quantity"
+                        (ionInput)="handleDynamicInput(boxId, 'quantity', $event)">
+                      </ion-input>
+                    </ion-item>
                   </ion-col>
-                  <ion-col size="6">
-                    <ion-input type="number" placeholder="Precio" fill="outline"
-                      [value]="control.price"
-                      (ionInput)="handleDynamicInput(boxId, 'price', $event)">
-                      <div slot="start">$</div>
-                    </ion-input>
+                  <ion-col size="8" size-sm="3.5">
+                    <ion-item class="rounded-small" lines="none">
+                      <ion-input type="number" placeholder="Precio" fill="outline"
+                        [value]="control.price"
+                        (ionInput)="handleDynamicInput(boxId, 'price', $event)">
+                        <div slot="start">$</div>
+                      </ion-input>
+                    </ion-item>
                   </ion-col>
                 </ion-row>
               </ion-grid>
             </ng-container>
             <ng-template #totalOnly>
-              <ion-input type="number" placeholder="Total" fill="outline"
+              <ion-input label="{{ control.boxName }}" labelPlacement="stacked" type="number" placeholder="Total" fill="outline"
                 [value]="control.total"
                 (ionInput)="handleDynamicInput(boxId, 'total', $event)">
                 <div slot="start">$</div>
               </ion-input>
             </ng-template>
           </ion-item>
-          <ion-item>
+          <!-- <ion-item>
             <ion-input label="Nota" labelPlacement="stacked" type="text" placeholder="Nota (opcional)" fill="outline"
               [value]="control.note"
               (ionInput)="handleDynamicInput(boxId, 'note', $event)">
             </ion-input>
-          </ion-item>
+          </ion-item> -->
         }
       </ion-list>
     }
