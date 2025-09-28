@@ -5,7 +5,7 @@ import { WeeklyBalance } from '../models/weekly-balance.model';
 
 export interface Expense {
   id?: number;
-  weeklyBalance: number;
+  weeklyBalance: number | null; // Changed to allow null
   date: string;
   earnings: number;
   createdAt: string;
@@ -69,6 +69,7 @@ export class ExpensesService {
   async addExpense(expense: Partial<Expense>) {
     const newExpense: Expense = {
       id: this.generateUniqueId(),
+      weeklyBalance: expense.weeklyBalance ?? null, // Handle null for weeklyBalance
       ...expense,
     } as Expense;
     const updated = [newExpense, ...this.expenses()];
@@ -82,6 +83,7 @@ export class ExpensesService {
     } else {
       console.log('Offline: Expense saved locally, will sync later.');
     }
+    return newExpense;
   }
 
   async updateExpense(updated: Expense) {

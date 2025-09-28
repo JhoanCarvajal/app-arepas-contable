@@ -1,6 +1,11 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>Agregar Registro</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openBoxSelectionActionSheet()">
+        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -11,7 +16,7 @@
     </ion-toolbar>
   </ion-header>
 
-  <form (ngSubmit)="onSubmit()" #financeForm="ngForm">
+  <form (ngSubmit)="onSubmit()" #expenseForm="ngForm">
     <ion-list [inset]="true">
       <ion-item class="rounded-input">
         <ion-label>Fecha del Registro</ion-label>
@@ -32,10 +37,10 @@
         </ion-input>
       </ion-item>
     </ion-list>
-    
+
     <ion-modal [keepContentsMounted]="true">
       <ng-template>
-        <ion-datetime 
+        <ion-datetime
           id="datetime"
           presentation="date"
           [showDefaultButtons]="true"
@@ -48,35 +53,75 @@
       </ng-template>
     </ion-modal>
 
-    <ion-list [inset]="true">
-      <ion-list-header>
-        <ion-label>Egresos / Gastos</ion-label>
-      </ion-list-header>
-      <ion-item class="rounded-input">
-        <ion-input label="Total de Gastos" labelPlacement="stacked" type="number" placeholder="Total" fill="outline" (ionInput)="handleInput($event, totalExpenses)" [value]="totalExpenses()"><div slot="start">$</div></ion-input>
-      </ion-item>
-    </ion-list>
-    
+    <!-- Dynamic Box Controls Section -->
+    @if (selectedBoxControls().size > 0) {
+      <ion-list [inset]="true">
+        <ion-list-header>
+          <ion-label>Gastos por Caja</ion-label>
+        </ion-list-header>
+
+        @for (controlEntry of selectedBoxControls(); track controlEntry[0]) {
+          @let boxId = controlEntry[0];
+          @let control = controlEntry[1];
+          <ion-item>
+            <ion-label>{{ control.boxName }}</ion-label>
+            <ng-container *ngIf="control.cantPriceFields; else totalOnly">
+              <ion-grid>
+                <ion-row class="ion-align-items-center">
+                  <ion-col size="6">
+                    <ion-input type="number" placeholder="Cant." fill="outline"
+                      [value]="control.quantity"
+                      (ionInput)="handleDynamicInput(boxId, 'quantity', $event)">
+                    </ion-input>
+                  </ion-col>
+                  <ion-col size="6">
+                    <ion-input type="number" placeholder="Precio" fill="outline"
+                      [value]="control.price"
+                      (ionInput)="handleDynamicInput(boxId, 'price', $event)">
+                      <div slot="start">$</div>
+                    </ion-input>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ng-container>
+            <ng-template #totalOnly>
+              <ion-input type="number" placeholder="Total" fill="outline"
+                [value]="control.total"
+                (ionInput)="handleDynamicInput(boxId, 'total', $event)">
+                <div slot="start">$</div>
+              </ion-input>
+            </ng-template>
+          </ion-item>
+          <ion-item>
+            <ion-input label="Nota" labelPlacement="stacked" type="text" placeholder="Nota (opcional)" fill="outline"
+              [value]="control.note"
+              (ionInput)="handleDynamicInput(boxId, 'note', $event)">
+            </ion-input>
+          </ion-item>
+        }
+      </ion-list>
+    }
+
     <ion-card class="ion-margin">
         <ion-card-content>
             <ion-item lines="none">
                 <ion-label>Total de Egresos:</ion-label>
                 <ion-text color="danger" slot="end">
-                    <h2 class="ion-no-margin">${{ totalExpenses() | number:'1.2-2' }}</h2>
+                    <h2 class="ion-no-margin">${{ totalSelectedBoxesExpenses() | number:'1.0-0' }}</h2>
                 </ion-text>
             </ion-item>
             <ion-item lines="none">
                 <ion-label><strong>Beneficio Neto:</strong></ion-label>
                 <ion-text [color]="netProfit() >= 0 ? 'success' : 'danger'" slot="end">
-                    <h2 class="ion-no-margin">${{ netProfit() | number:'1.2-2' }}</h2>
+                    <h2 class="ion-no-margin">${{ netProfit() | number:'1.0-0' }}</h2>
                 </ion-text>
             </ion-item>
         </ion-card-content>
     </ion-card>
 
     <div class="ion-padding">
-       <ion-button 
-        type="submit" 
+       <ion-button
+        type="submit"
         expand="block"
         [disabled]="dailyEarnings() === null || (dailyEarnings() ?? 0) < 0">
         Guardar Registro

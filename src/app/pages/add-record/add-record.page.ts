@@ -14,23 +14,26 @@ import {
   IonLabel,
   IonInput,
   IonButton,
-  IonGrid,
-  IonRow,
-  IonCol,
   IonCard,
   IonCardContent,
   IonText,
   IonListHeader,
   IonDatetimeButton,
   IonModal,
-  IonDatetime
-} from '@ionic/angular/standalone';
+  IonDatetime,
+  ActionSheetController,
+  IonButtons, IonIcon, IonRow, IonGrid, IonCol } from '@ionic/angular/standalone';
 import { ExpensesService, Expense } from '../../services/expenses.service';
+import { BoxesService, Box, BoxControl } from '../../services/boxes.service';
+import { ApiService } from '../../services/api.service';
+import { ExpensesBoxesService } from '../../services/expenses-boxes.service'; // Added ExpensesBoxesService
+import { addIcons } from 'ionicons';
+import { settingsOutline, cashOutline, walletOutline } from 'ionicons/icons';
 
 @Component({
   templateUrl: './add-record.page.html',
   styleUrls: ['./add-record.page.scss'],
-  imports: [
+  imports: [IonCol, IonGrid, IonRow, IonIcon, IonButtons, 
     CommonModule,
     FormsModule,
     IonHeader,
@@ -56,22 +59,36 @@ export class AddRecordPage implements OnInit, OnDestroy {
   @ViewChild('expenseForm') expenseForm?: NgForm;
 
   private expensesService = inject(ExpensesService);
+  private boxesService = inject(BoxesService);
+  private apiService = inject(ApiService);
+  private expensesBoxesService = inject(ExpensesBoxesService); // Injected ExpensesBoxesService
   private router: Router = inject(Router);
   private route: ActivatedRoute = inject(ActivatedRoute);
+  private actionSheetCtrl = inject(ActionSheetController);
+
+  constructor() {
+    addIcons({ settingsOutline, cashOutline, walletOutline });
+  }
 
   private getTodayISOString(): string {
     return new Date().toISOString();
   }
 
-  // Form inputs
   recordDate = signal<string>(this.getTodayISOString());
   dailyEarnings = signal<number | null>(null);
-  totalExpenses = signal<number | null>(null); // User will input this directly now
+  netProfit = computed(() => (this.dailyEarnings() ?? 0) - this.totalSelectedBoxesExpenses());
 
-  // Computed totals for the form (real-time summary)
-  netProfit = computed(() => (this.dailyEarnings() ?? 0) - (this.totalExpenses() ?? 0));
+  allBoxes = signal<Box[]>([]);
+  selectedBoxControls = signal<Map<number, { boxName: string, cantPriceFields: boolean, quantity: number | null, price: number | null, total: number | null, note: string | null }>>(new Map());
 
-  // Edit flags
+  totalSelectedBoxesExpenses = computed(() => {
+    let total = 0;
+    this.selectedBoxControls().forEach(control => {
+      total += control.total ?? 0;
+    });
+    return total;
+  });
+
   isEdit = signal(false);
   editingId: number | null = null;
 
@@ -79,13 +96,16 @@ export class AddRecordPage implements OnInit, OnDestroy {
   private navEndSub?: Subscription;
 
   ngOnInit(): void {
+    this.allBoxes.set(this.boxesService.getAll());
+
     this.routeSub = this.route.queryParams.subscribe(params => {
       const idFromQuery = params['id'];
       if (idFromQuery) {
         if (this.editingId !== idFromQuery) {
           this.loadExpenseForEdit(idFromQuery);
         }
-      } else {
+      }
+      else {
         if (this.isEdit()) {
           this.isEdit.set(false);
           this.editingId = null;
@@ -116,27 +136,126 @@ export class AddRecordPage implements OnInit, OnDestroy {
 
     this.recordDate.set(expense.date);
     this.dailyEarnings.set(expense.earnings ?? null);
-    this.totalExpenses.set(expense.totalExpenses ?? null);
   }
 
-  onSubmit(): void {
+  async openBoxSelectionActionSheet() {
+    const availableBoxes = this.allBoxes();
+    if (availableBoxes.length === 0) {
+      return;
+    }
+
+    const buttons = availableBoxes.map(box => ({
+      text: box.name,
+      handler: () => {
+        this.toggleBoxSelection(box);
+      },
+      icon: this.selectedBoxControls().has(box.id) ? 'checkmark-circle' : 'ellipse-outline',
+    }));
+
+    buttons.push({
+      text: 'Cerrar',
+      handler: () => { },
+      icon: 'close',
+    });
+
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Seleccionar Cajas para Gastos',
+      buttons: buttons,
+    });
+    await actionSheet.present();
+  }
+
+  toggleBoxSelection(box: Box) {
+    this.selectedBoxControls.update(map => {
+      const newMap = new Map(map);
+      if (newMap.has(box.id)) {
+        newMap.delete(box.id);
+      }
+      else {
+        newMap.set(box.id, {
+          boxName: box.name,
+          cantPriceFields: box.cantPriceFields,
+          quantity: null,
+          price: null,
+          total: null,
+          note: null
+        });
+      }
+      return newMap;
+    });
+  }
+
+  handleDynamicInput(boxId: number, field: 'quantity' | 'price' | 'total' | 'note', event: any): void {
+    const value = event.detail.value;
+    this.selectedBoxControls.update(map => {
+      const newMap = new Map(map);
+      const control = newMap.get(boxId);
+      if (control) {
+        if (field === 'quantity' || field === 'price' || field === 'total') {
+          const numericValue = parseFloat(String(value).replace(/,/g, ''));
+          control[field] = isNaN(numericValue) ? null : numericValue;
+
+          if (control.cantPriceFields && (field === 'quantity' || field === 'price')) {
+            control.total = (control.quantity ?? 0) * (control.price ?? 0);
+          }
+        } else {
+          control[field] = value;
+        }
+      }
+      return newMap;
+    });
+  }
+
+  async onSubmit(): Promise<void> {
     const earnings = this.dailyEarnings() ?? 0;
     if (this.dailyEarnings() !== null && earnings >= 0) {
-      // For now, weeklyBalance will be a placeholder. This needs to be implemented.
       const expenseData: Partial<Expense> = {
         id: this.isEdit() ? this.editingId ?? undefined : undefined,
         date: new Date(this.recordDate()).toISOString().split('T')[0],
         earnings: earnings,
-        totalExpenses: this.totalExpenses() ?? 0,
+        totalExpenses: this.totalSelectedBoxesExpenses(),
         netProfit: this.netProfit(),
-        weeklyBalance: 1, // Placeholder, needs implementation
+        weeklyBalance: null,
         createdAt: new Date(this.recordDate()).toISOString(),
       };
 
+      let createdExpense: Expense | undefined;
+
       if (this.isEdit()) {
         this.expensesService.updateExpense(expenseData as Expense);
+        createdExpense = expenseData as Expense;
       } else {
-        this.expensesService.addExpense(expenseData);
+        createdExpense = await this.expensesService.addExpense(expenseData);
+      }
+
+      if (createdExpense && createdExpense.id) {
+        const creationPromises: Promise<any>[] = [];
+
+        for (const [boxId, controlData] of this.selectedBoxControls().entries()) {
+          const boxControl: Partial<BoxControl> = {
+            boxId: boxId,
+            date: expenseData.date,
+            origin: controlData.note || 'formulario',
+            quantity: controlData.quantity,
+            price: controlData.price,
+            total: controlData.total ?? 0,
+            note: controlData.note,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          const createdBoxControl = await this.boxesService.addControlToBox(boxId, boxControl);
+
+          if (createdBoxControl && createdBoxControl.id) {
+            const expensesBoxData = {
+              expense: createdExpense.id,
+              box: boxId,
+              boxControl: createdBoxControl.id,
+            };
+            creationPromises.push(this.expensesBoxesService.addExpenseBox(expensesBoxData));
+          }
+        }
+
+        await Promise.all(creationPromises);
       }
 
       this.resetForm();
@@ -147,8 +266,8 @@ export class AddRecordPage implements OnInit, OnDestroy {
   resetForm(): void {
     this.expenseForm?.resetForm();
     this.dailyEarnings.set(null);
-    this.totalExpenses.set(null);
     this.recordDate.set(this.getTodayISOString());
+    this.selectedBoxControls.set(new Map());
     this.isEdit.set(false);
     this.editingId = null;
   }
