@@ -7,9 +7,9 @@ export const routes: Routes = [
     component: TabsPage,
     children: [
       {
-        path: 'history',
+        path: 'expenses', // Renamed path
         loadComponent: () =>
-          import('../pages/history/history.page').then(m => m.HistoryPage),
+          import('../pages/expenses/expenses.page').then(m => m.ExpensesPage), // Updated import
       },
       {
         path: 'add',
@@ -33,14 +33,14 @@ export const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: 'history',
+        redirectTo: 'expenses', // Updated redirectTo
         pathMatch: 'full',
       },
     ],
   },
   {
     path: '',
-    redirectTo: '/tabs/history',
+    redirectTo: '/tabs/expenses', // Updated redirectTo
     pathMatch: 'full',
   },
 ];

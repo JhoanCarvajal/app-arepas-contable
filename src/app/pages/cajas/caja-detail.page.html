@@ -18,12 +18,12 @@
     <ion-grid>
       <ion-row>
         <ion-col>
-          <ion-button expand="block" color="success" (click)="openAddRecord('ingreso')">
+          <ion-button expand="block" color="success" (click)="openAddControl('ingreso')">
             + Agregar ingreso
           </ion-button>
         </ion-col>
         <ion-col>
-          <ion-button expand="block" color="danger" (click)="openAddRecord('egreso')">
+          <ion-button expand="block" color="danger" (click)="openAddControl('egreso')">
             - Agregar egreso
           </ion-button>
         </ion-col>
@@ -32,15 +32,15 @@
   </div>
 
   <ion-list>
-    @for (r of series(); track $index) {
+    @for (c of series(); track $index) {
         <ion-item lines="full">
           <ion-label>
-            <h3>{{ r.date }}</h3>
-            <p>Origen: {{ r.origin }}</p>
-            @if (r.note) {<p>Nota: {{ r.note }}</p>}
-            <p class="ion-text-wrap">Total: ${{ r.total | number:'1.0-0' }}</p>
+            <h3>{{ c.date }}</h3>
+            <p>Origen: {{ c.origin }}</p>
+            @if (c.note) {<p>Nota: {{ c.note }}</p>}
+            <p class="ion-text-wrap">Total: ${{ c.total | number:'1.0-0' }}</p>
           </ion-label>
-          <ion-button fill="clear" color="danger" slot="end" size="default" (click)="removeRecord(r.id)">
+          <ion-button fill="clear" color="danger" slot="end" size="default" (click)="removeControl(c.id)">
             <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
           </ion-button>
         </ion-item>

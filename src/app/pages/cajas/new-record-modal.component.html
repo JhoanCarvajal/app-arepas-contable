@@ -5,7 +5,7 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form (ngSubmit)="confirm()" #newRecordForm="ngForm">
+  <form (ngSubmit)="confirm()" #newControlForm="ngForm">
     <ion-item>
       <ion-label position="stacked">Fecha</ion-label>
       <ion-datetime
@@ -17,12 +17,7 @@
       </ion-datetime>
     </ion-item>
 
-    <ion-item>
-      <ion-label position="stacked">Cantidad y Precio</ion-label>
-      <ion-checkbox slot="end" [checked]="extraFields()" (ionChange)="toggleExtraFields()"></ion-checkbox>
-    </ion-item>
-
-    <ng-container *ngIf="extraFields(); else noExtra">
+    <ng-container *ngIf="cantPriceFields; else noExtra">
       <ion-item>
         <ion-label position="stacked">Cantidad (opcional)</ion-label>
         <ion-input type="number" [value]="quantity()" (ionInput)="changeQuantity($event)" placeholder="Cantidad"></ion-input>
@@ -48,7 +43,7 @@
         type="number"
         [value]="total()"
         (ionInput)="changeTotal($event)"
-        [disabled]="extraFields()"
+        [disabled]="cantPriceFields"
         placeholder="Total">
       </ion-input>
     </ion-item>

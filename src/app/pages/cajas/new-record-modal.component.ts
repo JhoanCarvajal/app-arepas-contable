@@ -45,18 +45,14 @@ import {
 export class NewRecordModalComponent {
   @Input() type: 'ingreso' | 'egreso' = 'ingreso';
   @Input() boxId?: number;
+  @Input() cantPriceFields: boolean = false; // New Input
 
-  @ViewChild('newRecordForm') newRecordForm?: NgForm;
+  @ViewChild('newControlForm') newControlForm?: NgForm;
 
   private modalCtrl = inject(ModalController);
 
-  private getTodayISOString(): string {
-    return new Date().toISOString();
-  }
-
   // form fields -> usando Signals
   date: WritableSignal<string> = signal(new Date().toISOString().split('T')[0]); // yyyy-mm-dd
-  extraFields: WritableSignal<boolean> = signal(false);
   quantity: WritableSignal<number | null> = signal(null);
   price: WritableSignal<number | null> = signal(null);
   total: WritableSignal<number | null> = signal(null);
@@ -101,16 +97,6 @@ export class NewRecordModalComponent {
     this.total.set(Number.isNaN(parsed) ? null : parsed);
   }
 
-  toggleExtraFields() {
-    const next = !this.extraFields();
-    this.extraFields.set(next);
-    if (!next) {
-      this.quantity.set(null);
-      this.price.set(null);
-      this.total.set(null);
-    }
-  }
-
   changeNote(event: any) {
     const raw = event?.detail?.value ?? event?.target?.value ?? event;
     this.note.set(raw ? String(raw) : null);
@@ -135,17 +121,15 @@ export class NewRecordModalComponent {
       computedTotal = -Math.abs(Number(computedTotal));
     }
 
-    const record = {
+    const control = {
       date: this.date(),
       quantity: qty,
       price: pr,
       total: computedTotal,
       note: this.note(),
-      type: this.type,
       boxId: this.boxId,
-      extraFields: this.extraFields(),
     };
 
-    this.modalCtrl.dismiss(record, 'confirm');
+    this.modalCtrl.dismiss(control, 'confirm');
   }
 }

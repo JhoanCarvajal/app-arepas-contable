@@ -3,7 +3,7 @@ import { DecimalPipe } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import Chart from 'chart.js/auto';
-import { BoxesService, Box, BoxRecord } from '../../services/boxes.service';
+import { BoxesService, Box, BoxControl } from '../../services/boxes.service'; // Import BoxControl
 import { computed, effect } from '@angular/core';
 import {
   ToastController,
@@ -54,7 +54,7 @@ import { SyncService } from '../../services/sync.service';
 export class CajaDetailPage implements AfterViewInit {
   private route = inject(ActivatedRoute);
   private boxesService = inject(BoxesService);
-  private alertCtrl = inject(AlertController); // Already injected
+  private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private modalCtrl = inject(ModalController);
   private syncService = inject(SyncService);
@@ -68,8 +68,8 @@ export class CajaDetailPage implements AfterViewInit {
   box = computed<Box | undefined>(() => this.boxesService.getById(this.boxId));
   series = computed(() => {
     const b = this.box();
-    if (!b) return [] as BoxRecord[];
-    return [...b.records].sort((a, z) => new Date(a.createdAt).getTime() - new Date(z.createdAt).getTime());
+    if (!b) return [] as BoxControl[];
+    return [...b.controls].sort((a, z) => new Date(a.createdAt).getTime() - new Date(z.createdAt).getTime());
   });
 
   ionViewWillEnter() {
@@ -130,7 +130,7 @@ export class CajaDetailPage implements AfterViewInit {
     return this.box()?.total ?? 0;
   }
 
-  async removeRecord(recordId: number) { // Make async
+  async removeControl(controlId: number) { // Renamed from removeRecord
     const alert = await this.alertCtrl.create({
       header: 'Confirmar eliminación',
       message: '¿Está seguro que desea eliminar este registro?',
@@ -143,7 +143,7 @@ export class CajaDetailPage implements AfterViewInit {
         {
           text: 'Eliminar',
           handler: () => {
-            this.boxesService.removeRecordFromBox(this.boxId, recordId);
+            this.boxesService.removeControlFromBox(this.boxId, controlId); // Use removeControlFromBox
           },
         },
       ],
@@ -152,12 +152,13 @@ export class CajaDetailPage implements AfterViewInit {
     await alert.present();
   }
 
-  async openAddRecord(type: 'ingreso' | 'egreso') {
+  async openAddControl(type: 'ingreso' | 'egreso') { // Renamed from openAddRecord
     const modal = await this.modalCtrl.create({
       component: NewRecordModalComponent,
       componentProps: {
         type,
         boxId: this.boxId,
+        cantPriceFields: this.box()?.cantPriceFields ?? false,
       },
       cssClass: 'ac-modal',
     });
@@ -167,12 +168,11 @@ export class CajaDetailPage implements AfterViewInit {
     const { data, role } = await modal.onWillDismiss();
     if (role !== 'confirm' || !data) return;
 
-    const record = (data && (data.record ?? data)) as Partial<BoxRecord>;
-    if (!record) return;
+    const control = (data && (data.record ?? data)) as Partial<BoxControl>; // Use BoxControl
+    if (!control) return;
 
-    this.boxesService.addRecordToBox(this.boxId, record);
+    this.boxesService.addControlToBox(this.boxId, control); // Use addControlToBox
 
     this.toastCtrl.create({ message: `${type === 'ingreso' ? 'Ingreso' : 'Egreso'} agregado`, duration: 1400 }).then(t => t.present());
   }
-
 }

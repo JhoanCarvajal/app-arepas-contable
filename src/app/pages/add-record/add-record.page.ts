@@ -4,10 +4,10 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { 
-  IonHeader, 
-  IonToolbar, 
-  IonTitle, 
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
   IonContent,
   IonList,
   IonItem,
@@ -25,17 +25,17 @@ import {
   IonModal,
   IonDatetime
 } from '@ionic/angular/standalone';
-import { FinanceService, Submission } from '../../services/finance.service';
+import { ExpensesService, Expense } from '../../services/expenses.service';
 
 @Component({
   templateUrl: './add-record.page.html',
   styleUrls: ['./add-record.page.scss'],
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,
-    IonHeader, 
-    IonToolbar, 
-    IonTitle, 
+    IonHeader,
+    IonToolbar,
+    IonTitle,
     IonContent,
     IonList,
     IonItem,
@@ -56,9 +56,9 @@ import { FinanceService, Submission } from '../../services/finance.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddRecordPage implements OnInit, OnDestroy {
-  @ViewChild('financeForm') financeForm?: NgForm;
+  @ViewChild('expenseForm') expenseForm?: NgForm;
 
-  private financeService = inject(FinanceService);
+  private expensesService = inject(ExpensesService);
   private router: Router = inject(Router);
   private route: ActivatedRoute = inject(ActivatedRoute);
 
@@ -69,71 +69,38 @@ export class AddRecordPage implements OnInit, OnDestroy {
   // Form inputs
   recordDate = signal<string>(this.getTodayISOString());
   dailyEarnings = signal<number | null>(null);
-  generalExpenses = signal<number | null>(null);
-  operatingExpenses = signal<number | null>(null);
-  workerExpenses = signal<number | null>(null);
-  rentExpenses = signal<number | null>(null);
-  motorcycleExpenses = signal<number | null>(null);
-  
-  cornBags = signal<number | null>(null);
-  cornPrice = signal<number | null>(null);
-  
-  charcoalBags = signal<number | null>(null);
-  charcoalPrice = signal<number | null>(null);
-
-  // Computed totals for specific items
-  cornTotal = computed(() => (this.cornBags() ?? 0) * (this.cornPrice() ?? 0));
-  charcoalTotal = computed(() => (this.charcoalBags() ?? 0) * (this.charcoalPrice() ?? 0));
+  totalExpenses = signal<number | null>(null); // User will input this directly now
 
   // Computed totals for the form (real-time summary)
-  totalExpenses = computed(() => {
-    return (
-      this.cornTotal() +
-      this.charcoalTotal() +
-      (this.generalExpenses() ?? 0) +
-      (this.operatingExpenses() ?? 0) +
-      (this.workerExpenses() ?? 0) +
-      (this.rentExpenses() ?? 0) +
-      (this.motorcycleExpenses() ?? 0)
-    );
-  });
+  netProfit = computed(() => (this.dailyEarnings() ?? 0) - (this.totalExpenses() ?? 0));
 
-  netProfit = computed(() => (this.dailyEarnings() ?? 0) - this.totalExpenses());
-
-  // Nuevo: flags para edición
+  // Edit flags
   isEdit = signal(false);
-  editingCreatedAt: string | null = null;
-
-  // Nuevo: guardar id numérico del registro en edición
   editingId: number | null = null;
 
   private routeSub?: Subscription;
   private navEndSub?: Subscription;
 
   ngOnInit(): void {
-    // Suscribirse a cambios en queryParams (se emite aunque el componente ya exista)
     this.routeSub = this.route.queryParams.subscribe(params => {
       const idFromQuery = params['id'];
       if (idFromQuery) {
         if (this.editingId !== idFromQuery) {
-          this.loadSubmissionForEdit(idFromQuery);
+          this.loadExpenseForEdit(idFromQuery);
         }
       } else {
-        // Si navegamos sin id y estábamos en modo edición, salir del modo edición
         if (this.isEdit()) {
           this.isEdit.set(false);
-          this.editingCreatedAt = null;
-          this.editingId = null; // <-- limpiar id de edición
+          this.editingId = null;
           this.resetForm();
         }
       }
     });
 
-    // También detectar navigation state (router.navigate(..., { state })) aunque queryParams no cambie
     this.navEndSub = this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
       const stateId = (history.state as any)?.id;
       if (stateId && this.editingId !== stateId) {
-        this.loadSubmissionForEdit(stateId);
+        this.loadExpenseForEdit(stateId);
       }
     });
   }
@@ -143,94 +110,50 @@ export class AddRecordPage implements OnInit, OnDestroy {
     this.navEndSub?.unsubscribe();
   }
 
-  private loadSubmissionForEdit(submissionId: string): void {
-    const sub = this.financeService.getSubmissionById(Number(submissionId));
-    if (!sub) return;
+  private loadExpenseForEdit(expenseId: string): void {
+    const expense = this.expensesService.getById(Number(expenseId));
+    if (!expense) return;
 
     this.isEdit.set(true);
-    this.editingCreatedAt = sub.createdAt;
-    this.editingId = sub.id ?? null; // <-- set editing id
+    this.editingId = expense.id ?? null;
 
-    // Mapear valores al formulario (signals)
-    console.log('Cargando para edición el registro:', sub.createdAt);
-    this.recordDate.set(sub.createdAt);
-    // this.recordDate.set(new Date(sub.createdAt).toISOString());
-    console.log('Fecha seteada en el formulario:', this.recordDate());
-
-    this.dailyEarnings.set(sub.earnings ?? null);
-    this.generalExpenses.set(sub.generalExpenses ?? null);
-    this.operatingExpenses.set(sub.operatingExpenses ?? null);
-    this.workerExpenses.set(sub.workerExpenses ?? null);
-    this.rentExpenses.set(sub.rentExpenses ?? null);
-    this.motorcycleExpenses.set(sub.motorcycleExpenses ?? null);
-
-    this.cornBags.set(sub.cornBags ?? null);
-    this.cornPrice.set(sub.cornPrice ?? null);
-
-    this.charcoalBags.set(sub.charcoalBags ?? null);
-    this.charcoalPrice.set(sub.charcoalPrice ?? null);
+    this.recordDate.set(expense.date);
+    this.dailyEarnings.set(expense.earnings ?? null);
+    this.totalExpenses.set(expense.totalExpenses ?? null);
   }
 
   onSubmit(): void {
     const earnings = this.dailyEarnings() ?? 0;
     if (this.dailyEarnings() !== null && earnings >= 0) {
-      const submissionBase: Submission = {
-        // Si estamos en edición preservamos createdAt e id; en creación el servicio asigna id
-        // createdAt: this.isEdit() && this.editingCreatedAt ? this.editingCreatedAt : new Date().toISOString(),
+      // For now, weeklyBalance will be a placeholder. This needs to be implemented.
+      const expenseData: Partial<Expense> = {
         id: this.isEdit() ? this.editingId ?? undefined : undefined,
-        date: new Date(this.recordDate()).toISOString().split('T')[0], // Formato YYYY-MM-DD
+        date: new Date(this.recordDate()).toISOString().split('T')[0],
         earnings: earnings,
-        // Detalle completo para permitir edición posterior
-        createdAt: this.recordDate(),
-        generalExpenses: this.generalExpenses(),
-        operatingExpenses: this.operatingExpenses(),
-        workerExpenses: this.workerExpenses(),
-        rentExpenses: this.rentExpenses(),
-        motorcycleExpenses: this.motorcycleExpenses(),
-
-        cornBags: this.cornBags(),
-        cornPrice: this.cornPrice(),
-
-        charcoalBags: this.charcoalBags(),
-        charcoalPrice: this.charcoalPrice(),
-
-        totalExpenses: this.totalExpenses(),
+        totalExpenses: this.totalExpenses() ?? 0,
         netProfit: this.netProfit(),
+        weeklyBalance: 1, // Placeholder, needs implementation
+        createdAt: new Date(this.recordDate()).toISOString(),
       };
 
       if (this.isEdit()) {
-        this.financeService.updateSubmission(submissionBase);
+        this.expensesService.updateExpense(expenseData as Expense);
       } else {
-        this.financeService.addSubmission(submissionBase);
+        this.expensesService.addExpense(expenseData);
       }
 
       this.resetForm();
-      this.router.navigate(['/tabs/history']);
+      this.router.navigate(['/tabs/expenses']);
     }
   }
 
   resetForm(): void {
-    // Reset form visually
-    this.financeForm?.resetForm();
-
-    // Reset signals
+    this.expenseForm?.resetForm();
     this.dailyEarnings.set(null);
-    this.generalExpenses.set(null);
-    this.operatingExpenses.set(null);
-    this.workerExpenses.set(null);
-    this.rentExpenses.set(null);
-    this.motorcycleExpenses.set(null);
-    this.cornBags.set(null);
-    this.cornPrice.set(null);
-    this.charcoalBags.set(null);
-    this.charcoalPrice.set(null);
-    
+    this.totalExpenses.set(null);
     this.recordDate.set(this.getTodayISOString());
-
-    // Reset edición
     this.isEdit.set(false);
-    this.editingCreatedAt = null;
-    this.editingId = null; // <-- limpiar id de edición
+    this.editingId = null;
   }
 
   handleInput(event: any, signalToUpdate: WritableSignal<number | null>): void {
