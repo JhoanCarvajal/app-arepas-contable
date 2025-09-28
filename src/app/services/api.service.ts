@@ -2,12 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Network } from '@capacitor/network'; // Import Network
+import { environment } from '../../environments/environment'; // Import environment
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private readonly API_URL = 'http://127.0.0.1:8000/api/v1';
+  private readonly API_URL = environment.API_URL; // Use environment variable
 
   constructor(private http: HttpClient) { }
 
