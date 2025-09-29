@@ -5,7 +5,7 @@ import { WeeklyBalance } from '../models/weekly-balance.model';
 
 export interface Expense {
   id?: number;
-  weeklyBalance: number | null; // Changed to allow null
+  weeklyBalance: number | null;
   date: string;
   earnings: number;
   createdAt: string;
@@ -70,7 +70,7 @@ export class ExpensesService {
     const newExpense: Expense = {
       ...expense,
       id: this.generateUniqueId(),
-      weeklyBalance: expense.weeklyBalance ?? null, // Handle null for weeklyBalance
+      weeklyBalance: expense.weeklyBalance ?? null,
     } as Expense;
     const updated = [newExpense, ...this.expenses()];
     this.expenses.set(updated);
@@ -104,13 +104,13 @@ export class ExpensesService {
   }
 
   async removeExpense(id: number) {
-    this.expenses.set(this.expenses().filter(e => e.id !== id));
+    this.expenses.update(expenses => expenses.filter(e => e.id !== id));
     this.saveToLocalStorage();
 
     if (await this.apiService.isOnlineAndApiAvailable()) {
       this.apiService.deleteExpense(id).pipe(
-        tap(() => console.log('Expense deleted on API:', id))
-      ).subscribe({ error: err => console.error('Failed to delete expense on API', err) });
+        tap(() => console.log('Expense soft-deleted on API:', id))
+      ).subscribe({ error: err => console.error('Failed to soft-delete expense on API', err) });
     } else {
       console.log('Offline: Expense deleted locally, will sync later.');
     }

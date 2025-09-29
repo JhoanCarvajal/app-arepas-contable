@@ -50,6 +50,10 @@ export class ExpensesBoxesService {
     return this.expensesBoxes().find(eb => eb.id === id);
   }
 
+  getExpensesBoxesForExpense(expenseId: number): ExpenseBox[] {
+    return this.expensesBoxes().filter(eb => eb.expense === expenseId);
+  }
+
   addExpensesBoxes(newExpensesBoxes: ExpenseBox[]) {
     const currentExpensesBoxes = this.expensesBoxes();
     this.expensesBoxes.set([...currentExpensesBoxes, ...newExpensesBoxes]);
@@ -75,33 +79,33 @@ export class ExpensesBoxesService {
     return newExpenseBox;
   }
 
-  // async updateExpenseBox(updated: ExpenseBox) {
-  //   const idx = this.expensesBoxes().findIndex(eb => (updated.id !== undefined && eb.id === updated.id));
-  //   if (idx === -1) return;
-  //   const copy = [...this.expensesBoxes()];
-  //   copy[idx] = { ...updated };
-  //   this.expensesBoxes.set(copy);
-  //   this.saveToLocalStorage();
+  async updateExpenseBox(updated: ExpenseBox) {
+    const idx = this.expensesBoxes().findIndex(eb => (updated.id !== undefined && eb.id === updated.id));
+    if (idx === -1) return;
+    const copy = [...this.expensesBoxes()];
+    copy[idx] = { ...updated };
+    this.expensesBoxes.set(copy);
+    this.saveToLocalStorage();
 
-  //   if (updated.id && await this.apiService.isOnlineAndApiAvailable()) {
-  //     this.apiService.updateExpenseBox(updated.id, updated).pipe(
-  //       tap(apiExpenseBox => console.log('ExpenseBox updated on API:', apiExpenseBox))
-  //     ).subscribe({ error: err => console.error('Failed to update ExpenseBox on API', err) });
-  //   } else {
-  //     console.log('Offline: ExpenseBox updated locally, will sync later.');
-  //   }
-  // }
+    if (updated.id && await this.apiService.isOnlineAndApiAvailable()) {
+      this.apiService.updateExpenseBox(updated.id, updated).pipe(
+        tap(apiExpenseBox => console.log('ExpenseBox updated on API:', apiExpenseBox))
+      ).subscribe({ error: err => console.error('Failed to update ExpenseBox on API', err) });
+    } else {
+      console.log('Offline: ExpenseBox updated locally, will sync later.');
+    }
+  }
 
-  // async removeExpenseBox(id: number) {
-  //   this.expensesBoxes.set(this.expensesBoxes().filter(eb => eb.id !== id));
-  //   this.saveToLocalStorage();
+  async removeExpenseBox(id: number) {
+    this.expensesBoxes.update(expensesBoxes => expensesBoxes.filter(eb => eb.id !== id));
+    this.saveToLocalStorage();
 
-  //   if (await this.apiService.isOnlineAndApiAvailable()) {
-  //     this.apiService.deleteExpenseBox(id).pipe(
-  //       tap(() => console.log('ExpenseBox deleted on API:', id))
-  //     ).subscribe({ error: err => console.error('Failed to delete ExpenseBox on API', err) });
-  //   } else {
-  //     console.log('Offline: ExpenseBox deleted locally, will sync later.');
-  //   }
-  // }
+    if (await this.apiService.isOnlineAndApiAvailable()) {
+      this.apiService.deleteExpenseBox(id).pipe(
+        tap(() => console.log('ExpenseBox soft-deleted on API:', id))
+      ).subscribe({ error: err => console.error('Failed to soft-delete ExpenseBox on API', err) });
+    } else {
+      console.log('Offline: ExpenseBox deleted locally, will sync later.');
+    }
+  }
 }

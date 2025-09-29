@@ -23,6 +23,7 @@ export interface Box {
   cantPriceFields: boolean;
   createdAt: string;
   controls: BoxControl[];
+  deletedAt?: string | null; // Add deletedAt for Box soft delete
 }
 
 @Injectable({
@@ -58,7 +59,7 @@ export class BoxesService {
       const raw = localStorage.getItem(this.storageKey);
       if (!raw) return;
       const parsed = JSON.parse(raw) as Box[];
-      this.boxes.set(parsed);
+      this.boxes.set(parsed.filter(b => !b.deletedAt));
     } catch (e) {
       console.error('Error leyendo cajas desde localStorage', e);
     }
@@ -150,15 +151,14 @@ export class BoxesService {
     }
   }
 
-
   async removeBox(id: number) {
-    this.boxes.set(this.boxes().filter(b => b.id !== id));
+    this.boxes.update(boxes => boxes.filter(b => b.id !== id));
     this.saveToLocalStorage();
 
     if (await this.apiService.isOnlineAndApiAvailable()) {
       this.apiService.deleteBox(id).pipe(
-        tap(() => console.log('Box deleted on API:', id))
-      ).subscribe({ error: err => console.error('Failed to delete box on API', err) });
+        tap(() => console.log('Box soft-deleted on API:', id))
+      ).subscribe({ error: err => console.error('Failed to soft-delete box on API', err) });
     } else {
       console.log('Offline: Box deleted locally, will sync later.');
     }
@@ -222,8 +222,8 @@ export class BoxesService {
 
     if (await this.apiService.isOnlineAndApiAvailable()) {
       this.apiService.deleteBoxControl(controlId).pipe(
-        tap(() => console.log('BoxControl deleted on API:', controlId))
-      ).subscribe({ error: err => console.error('Failed to delete BoxControl on API', err) });
+        tap(() => console.log('BoxControl soft-deleted on API:', controlId))
+      ).subscribe({ error: err => console.error('Failed to soft-delete BoxControl on API', err) });
     } else {
       console.log('Offline: BoxControl deleted locally, will sync later.');
     }

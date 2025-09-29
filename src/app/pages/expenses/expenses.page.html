@@ -49,6 +49,13 @@
               [queryParams]="{ id: item.id }">
               Editar
             </ion-button>
+            <ion-button
+              fill="outline"
+              size="small"
+              color="danger"
+              (click)="deleteExpense(item)">
+              Eliminar
+            </ion-button>
           </ion-card-content>
         </ion-card>
       }

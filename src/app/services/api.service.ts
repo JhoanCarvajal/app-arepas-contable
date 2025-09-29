@@ -100,4 +100,12 @@ export class ApiService {
   createExpenseBox(expenseBox: any): Observable<any> {
     return this.http.post<any>(`${this.API_URL}/expensesboxes/`, expenseBox);
   }
+
+  updateExpenseBox(id: number, expenseBox: any): Observable<any> {
+    return this.http.put<any>(`${this.API_URL}/expensesboxes/${id}/`, expenseBox);
+  }
+
+  deleteExpenseBox(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.API_URL}/expensesboxes/${id}/`);
+  }
 }

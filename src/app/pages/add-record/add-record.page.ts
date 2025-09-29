@@ -265,7 +265,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
             id: controlData.id, // Use existing ID if available
             boxId: boxId,
             date: expenseData.date,
-            origin: controlData.note || 'formulario',
+            origin: 'formulario',
             quantity: controlData.quantity,
             price: controlData.price,
             total: controlData.total ?? 0,
