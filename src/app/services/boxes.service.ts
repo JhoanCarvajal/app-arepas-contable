@@ -72,6 +72,17 @@ export class BoxesService {
     return this.boxes().find(b => b.id === id);
   }
 
+  // New method to get a specific BoxControl by its ID
+  getControlById(controlId: number): BoxControl | undefined {
+    for (const box of this.boxes()) {
+      const control = box.controls.find(c => c.id === controlId);
+      if (control) {
+        return control;
+      }
+    }
+    return undefined;
+  }
+
   addBoxes(newBoxes: Box[]) {
     const currentBoxes = this.boxes();
     this.boxes.set([...currentBoxes, ...newBoxes]);
@@ -118,6 +129,27 @@ export class BoxesService {
       console.log('Offline: Box updated locally, will sync later.');
     }
   }
+
+  // New method to update a specific BoxControl
+  async updateControl(boxId: number, updatedControl: BoxControl) {
+    const box = this.getById(boxId);
+    if (!box) return;
+
+    const controlIdx = box.controls.findIndex(c => c.id === updatedControl.id);
+    if (controlIdx === -1) return;
+
+    box.controls[controlIdx] = { ...updatedControl };
+    this.updateBox(box); // This will also save to local storage and attempt API update for the box
+
+    if (await this.apiService.isOnlineAndApiAvailable()) {
+      this.apiService.updateBoxControl(updatedControl.id, updatedControl).pipe(
+        tap(apiControl => console.log('BoxControl updated on API:', apiControl))
+      ).subscribe({ error: err => console.error('Failed to update BoxControl on API', err) });
+    } else {
+      console.log('Offline: BoxControl updated locally, will sync later.');
+    }
+  }
+
 
   async removeBox(id: number) {
     this.boxes.set(this.boxes().filter(b => b.id !== id));

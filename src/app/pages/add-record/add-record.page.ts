@@ -22,18 +22,19 @@ import {
   IonModal,
   IonDatetime,
   ActionSheetController,
-  IonButtons, IonIcon, IonRow, IonGrid, IonCol } from '@ionic/angular/standalone';
+  IonButtons, IonIcon, IonRow, IonGrid, IonCol
+} from '@ionic/angular/standalone';
 import { ExpensesService, Expense } from '../../services/expenses.service';
 import { BoxesService, Box, BoxControl } from '../../services/boxes.service';
 import { ApiService } from '../../services/api.service';
-import { ExpensesBoxesService } from '../../services/expenses-boxes.service'; // Added ExpensesBoxesService
+import { ExpensesBoxesService } from '../../services/expenses-boxes.service';
 import { addIcons } from 'ionicons';
 import { settingsOutline, cashOutline, walletOutline, checkmarkCircle, ellipseOutline, close } from 'ionicons/icons';
 
 @Component({
   templateUrl: './add-record.page.html',
   styleUrls: ['./add-record.page.scss'],
-  imports: [IonCol, IonGrid, IonRow, IonIcon, IonButtons, 
+  imports: [IonCol, IonGrid, IonRow, IonIcon, IonButtons,
     CommonModule,
     FormsModule,
     IonHeader,
@@ -61,7 +62,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
   private expensesService = inject(ExpensesService);
   private boxesService = inject(BoxesService);
   private apiService = inject(ApiService);
-  private expensesBoxesService = inject(ExpensesBoxesService); // Injected ExpensesBoxesService
+  private expensesBoxesService = inject(ExpensesBoxesService);
   private router: Router = inject(Router);
   private route: ActivatedRoute = inject(ActivatedRoute);
   private actionSheetCtrl = inject(ActionSheetController);
@@ -79,7 +80,8 @@ export class AddRecordPage implements OnInit, OnDestroy {
   netProfit = computed(() => (this.dailyEarnings() ?? 0) - this.totalSelectedBoxesExpenses());
 
   allBoxes = signal<Box[]>([]);
-  selectedBoxControls = signal<Map<number, { boxName: string, cantPriceFields: boolean, quantity: number | null, price: number | null, total: number | null, note: string | null }>>(new Map());
+  // Map to store selected boxes and their input values: Map<boxId, { boxName, cantPriceFields, quantity, price, total, note, id?: number }>
+  selectedBoxControls = signal<Map<number, { boxName: string, cantPriceFields: boolean, quantity: number | null, price: number | null, total: number | null, note: string | null, id?: number }>>(new Map());
 
   totalSelectedBoxesExpenses = computed(() => {
     let total = 0;
@@ -104,8 +106,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
         if (this.editingId !== idFromQuery) {
           this.loadExpenseForEdit(idFromQuery);
         }
-      }
-      else {
+      } else {
         if (this.isEdit()) {
           this.isEdit.set(false);
           this.editingId = null;
@@ -127,7 +128,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
     this.navEndSub?.unsubscribe();
   }
 
-  private loadExpenseForEdit(expenseId: string): void {
+  private async loadExpenseForEdit(expenseId: string): Promise<void> {
     const expense = this.expensesService.getById(Number(expenseId));
     if (!expense) return;
 
@@ -136,9 +137,36 @@ export class AddRecordPage implements OnInit, OnDestroy {
 
     this.recordDate.set(expense.date);
     this.dailyEarnings.set(expense.earnings ?? null);
+
+    const allExpensesBoxes = this.expensesBoxesService.getAll();
+    const relatedExpensesBoxes = allExpensesBoxes.filter(eb => eb.expense === expense.id);
+
+    const newSelectedBoxControls = new Map<number, { boxName: string, cantPriceFields: boolean, quantity: number | null, price: number | null, total: number | null, note: string | null, id?: number }>();
+
+    for (const eb of relatedExpensesBoxes) {
+      const boxControl = this.boxesService.getControlById(eb.boxControl);
+      const box = this.boxesService.getById(eb.box);
+
+      if (boxControl && box) {
+        newSelectedBoxControls.set(box.id, {
+          boxName: box.name,
+          cantPriceFields: box.cantPriceFields,
+          quantity: boxControl.quantity ?? null,
+          price: boxControl.price ?? null,
+          total: boxControl.total ?? null,
+          note: boxControl.note ?? null,
+          id: boxControl.id // Store the BoxControl ID
+        });
+      }
+    }
+    this.selectedBoxControls.set(newSelectedBoxControls);
   }
 
   async openBoxSelectionActionSheet() {
+    if (this.isEdit()) { // Disable selection in edit mode
+      return;
+    }
+
     const availableBoxes = this.allBoxes();
     if (availableBoxes.length === 0) {
       return;
@@ -194,7 +222,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
         if (field === 'quantity' || field === 'price' || field === 'total') {
           const numericValue = parseFloat(String(value).replace(/,/g, ''));
           control[field] = isNaN(numericValue) ? null : numericValue;
-          
+
           if (control.cantPriceFields && (field === 'quantity' || field === 'price')) {
             control.total = (control.quantity ?? 0) * (control.price ?? 0);
             control['note'] = `${control.quantity ?? 0} bultos a $${control.price ?? 0}`;
@@ -234,6 +262,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
 
         for (const [boxId, controlData] of this.selectedBoxControls().entries()) {
           const boxControl: Partial<BoxControl> = {
+            id: controlData.id, // Use existing ID if available
             boxId: boxId,
             date: expenseData.date,
             origin: controlData.note || 'formulario',
@@ -244,7 +273,14 @@ export class AddRecordPage implements OnInit, OnDestroy {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
-          const createdBoxControl = await this.boxesService.addControlToBox(boxId, boxControl);
+
+          let createdBoxControl: BoxControl | undefined;
+          if (this.isEdit() && boxControl.id) {
+            this.boxesService.updateControl(boxId, boxControl as BoxControl);
+            createdBoxControl = boxControl as BoxControl;
+          } else {
+            createdBoxControl = await this.boxesService.addControlToBox(boxId, boxControl);
+          }
 
           if (createdBoxControl && createdBoxControl.id) {
             const expensesBoxData = {

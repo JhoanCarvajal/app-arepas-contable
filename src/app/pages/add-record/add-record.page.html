@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-title>Agregar Registro</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="openBoxSelectionActionSheet()">
+      <ion-button (click)="openBoxSelectionActionSheet()" [disabled]="isEdit()"> <!-- Disabled if editing -->
         <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -38,7 +38,6 @@
       </ion-item>
     </ion-list>
 
-    <!-- Este es un modal para mostrar el calendario de la fecha del registrok -->
     <ion-modal [keepContentsMounted]="true">
       <ng-template>
         <ion-datetime
