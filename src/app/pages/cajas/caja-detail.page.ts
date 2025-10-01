@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+// import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import Chart from 'chart.js/auto';
 import { BoxesService, Box, BoxControl } from '../../services/boxes.service'; // Import BoxControl

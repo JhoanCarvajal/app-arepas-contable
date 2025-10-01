@@ -1,16 +1,54 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
+// import { IonicModule } from '@ionic/angular';
 import { RouterModule, Router } from '@angular/router';
 import { BoxesService, BoxControl } from '../../services/boxes.service'; // Import BoxControl
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { cubeOutline, trashOutline } from 'ionicons/icons';
-import { AlertController } from '@ionic/angular/standalone';
+import {
+  AlertController,
+  IonCheckbox,
+  IonHeader,
+  IonToolbar,
+  IonText,
+  IonTitle,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonButton,
+  IonIcon,
+  IonInput,
+} from '@ionic/angular/standalone';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, FormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    IonCheckbox,
+    IonHeader,
+    IonToolbar,
+    IonText,
+    IonTitle,
+    IonContent,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonButton,
+    IonIcon,
+    IonInput,
+    FormsModule,
+  ],
   templateUrl: 'cajas.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

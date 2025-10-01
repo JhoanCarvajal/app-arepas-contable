@@ -1,6 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { ApiService } from './api.service';
 import { tap } from 'rxjs/operators';
+import { ExpensesBoxesService } from './expenses-boxes.service'; // Import ExpensesBoxesService
 
 export interface BoxControl {
   id: number;
@@ -33,6 +34,7 @@ export class BoxesService {
   private storageKey = 'registro-ganancias-boxes';
   boxes = signal<Box[]>([]);
   private apiService = inject(ApiService);
+  private expensesBoxesService = inject(ExpensesBoxesService); // Inject ExpensesBoxesService
 
   constructor() {
     this.loadFromLocalStorage();
@@ -216,6 +218,14 @@ export class BoxesService {
     const control = box.controls.find(c => c.id === controlId);
     if (!control) return;
 
+    // New logic: Check for and delete related ExpensesBoxes entry first
+    const allExpensesBoxes = this.expensesBoxesService.getAll();
+    const relatedExpenseBox = allExpensesBoxes.find(eb => eb.boxControl === controlId);
+    if (relatedExpenseBox && relatedExpenseBox.id) {
+      await this.expensesBoxesService.removeExpenseBox(relatedExpenseBox.id);
+    }
+
+    // Proceed with deleting the BoxControl
     box.total = (box.total ?? 0) - (control.total ?? 0);
     box.controls = box.controls.filter(c => c.id !== controlId);
     this.updateBox(box);
