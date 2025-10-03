@@ -47,7 +47,7 @@ export class ApiService {
 
   // BOX CONTROLS
   getBoxControlsForBox(boxId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_URL}/boxcontrols/`, { params: { box_id: boxId.toString() } });
+    return this.http.get<any[]>(`${this.API_URL}/boxcontrols/`, { params: { box: boxId.toString() } });
   }
 
   createBoxControl(control: any): Observable<any> {

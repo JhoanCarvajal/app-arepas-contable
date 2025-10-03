@@ -26,6 +26,8 @@ import {
 } from '@ionic/angular/standalone';
 import { NewRecordModalComponent } from './new-record-modal.component';
 import { SyncService } from '../../services/sync.service';
+import { addIcons } from 'ionicons';
+import { trashOutline } from 'ionicons/icons';
 
 @Component({
   standalone: true,
@@ -71,6 +73,10 @@ export class CajaDetailPage implements AfterViewInit {
     if (!b) return [] as BoxControl[];
     return [...b.controls].sort((a, z) => new Date(a.createdAt).getTime() - new Date(z.createdAt).getTime());
   });
+
+  constructor() {
+    addIcons({ trashOutline });
+  }
 
   ionViewWillEnter() {
     this.syncService.syncBoxControls(this.boxId);

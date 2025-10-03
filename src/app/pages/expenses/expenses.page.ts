@@ -17,12 +17,11 @@ import {
   IonText,
   IonButton,
   IonIcon,
-  ActionSheetController,
   ToastController,
   AlertController // Import AlertController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { cashOutline, walletOutline, trashOutline } from 'ionicons/icons'; // Import trashOutline
+import { cashOutline, walletOutline } from 'ionicons/icons';
 import { ExpensesService, Expense } from '../../services/expenses.service';
 import { BoxesService } from '../../services/boxes.service';
 import { ExpensesBoxesService } from '../../services/expenses-boxes.service'; // Import ExpensesBoxesService
@@ -59,10 +58,9 @@ export class ExpensesPage implements OnInit {
   expenses = this.expensesService.expenses;
 
   constructor(
-    private actionSheetCtrl: ActionSheetController,
     private toastController: ToastController
   ) {
-    addIcons({ cashOutline, walletOutline, trashOutline }); // Add trashOutline icon
+    addIcons({ cashOutline, walletOutline });
   }
 
   ngOnInit() {
@@ -75,45 +73,6 @@ export class ExpensesPage implements OnInit {
     });
     this.expensesService.expenses.set(updatedExpenses);
     this.expensesService['saveToLocalStorage']();
-  }
-
-  async openAddToBox(item: Expense) {
-    const boxes = this.boxesService.getAll();
-    if (!boxes || boxes.length === 0) {
-      const toast = await this.toastController.create({
-        message: 'No hay cajas. Crea una primero!',
-        duration: 1500,
-      });
-      await toast.present();
-      return;
-    }
-
-    const buttons = boxes.map(b => ({
-      text: b.name,
-      role: 'selected',
-      handler: async () => {
-        const control = this.buildControlFromExpense(item, b);
-        this.boxesService.addControlToBox(b.id, control);
-        const toast = await this.toastController.create({
-          message: `Agregado a ${b.name}`,
-          duration: 1500,
-        });
-        await toast.present();
-      }
-    }));
-
-    buttons.push({
-      text: 'Cancelar',
-      role: 'cancel',
-      handler: () => Promise.resolve()
-    });
-
-    const actionSheet = await this.actionSheetCtrl.create({
-      header: 'Selecciona una caja',
-      buttons: buttons,
-    });
-
-    await actionSheet.present();
   }
 
   // This logic is now simplified as many fields were removed from Expense

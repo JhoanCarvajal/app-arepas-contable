@@ -39,12 +39,6 @@
             <ion-button
               fill="outline"
               size="small"
-              (click)="openAddToBox(item)">
-              Agregar a caja
-            </ion-button>
-            <ion-button
-              fill="outline"
-              size="small"
               [routerLink]="['/tabs/add']"
               [queryParams]="{ id: item.id }">
               Editar
