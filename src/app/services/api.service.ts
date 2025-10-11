@@ -46,13 +46,20 @@ export class ApiService {
   }
 
   // BOX CONTROLS
-  getBoxControlsForBox(boxId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.API_URL}/boxcontrols/`, { params: { box: boxId.toString() } });
+  getBoxControlsForBox(boxId: number, only_deleted: boolean=false): Observable<any[]> {
+    const params = { box_id: boxId.toString() }
+    if (only_deleted) {
+      Object.assign(params, { only_deleted: only_deleted });
+    }
+    return this.http.get<any[]>(`${this.API_URL}/boxcontrols/`, { params: params });
   }
 
   createBoxControl(control: any): Observable<any> {
+    let payload = { ...control };
     const { boxId, ...rest } = control;
-    const payload = { ...rest, box: boxId };
+    if (boxId) {
+      payload = { ...rest, box: boxId };
+    }
     return this.http.post<any>(`${this.API_URL}/boxcontrols/`, payload);
   }
 

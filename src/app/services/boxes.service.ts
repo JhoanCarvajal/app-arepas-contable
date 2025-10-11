@@ -142,6 +142,7 @@ export class BoxesService {
     if (controlIdx === -1) return;
 
     box.controls[controlIdx] = { ...updatedControl };
+    box.total = (box.total ?? 0) + (updatedControl.total ?? 0);
     this.updateBox(box); // This will also save to local storage and attempt API update for the box
 
     if (await this.apiService.isOnlineAndApiAvailable()) {
