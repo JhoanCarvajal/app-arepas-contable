@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()">Cancelar</ion-button>
+    </ion-buttons>
+    <ion-title>Seleccionar Cajas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="confirm()" [strong]="true">Confirmar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-list>
+    <ion-item *ngFor="let box of allBoxes">
+      <ion-checkbox
+        slot="start"
+        [checked]="isSelected(box.id)"
+        (ionChange)="toggle(box.id)"
+      ></ion-checkbox>
+      <ion-label>{{ box.name }}</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

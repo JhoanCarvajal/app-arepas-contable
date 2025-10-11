@@ -21,7 +21,7 @@ import {
   IonDatetimeButton,
   IonModal,
   IonDatetime,
-  ActionSheetController,
+  ModalController, // Use ModalController
   IonButtons, IonIcon, IonRow, IonGrid, IonCol
 } from '@ionic/angular/standalone';
 import { ExpensesService, Expense } from '../../services/expenses.service';
@@ -29,7 +29,8 @@ import { BoxesService, Box, BoxControl } from '../../services/boxes.service';
 import { ApiService } from '../../services/api.service';
 import { ExpensesBoxesService } from '../../services/expenses-boxes.service';
 import { addIcons } from 'ionicons';
-import { settingsOutline, cashOutline, walletOutline, checkmarkCircle, ellipseOutline, close } from 'ionicons/icons';
+import { settingsOutline, cashOutline, walletOutline } from 'ionicons/icons';
+import { BoxSelectionModalComponent } from './box-selection-modal.component'; // Import the modal component
 
 @Component({
   templateUrl: './add-record.page.html',
@@ -65,10 +66,10 @@ export class AddRecordPage implements OnInit, OnDestroy {
   private expensesBoxesService = inject(ExpensesBoxesService);
   private router: Router = inject(Router);
   private route: ActivatedRoute = inject(ActivatedRoute);
-  private actionSheetCtrl = inject(ActionSheetController);
+  private modalCtrl = inject(ModalController); // Use ModalController
 
   constructor() {
-    addIcons({ settingsOutline, cashOutline, walletOutline, checkmarkCircle, ellipseOutline, close });
+    addIcons({ settingsOutline, cashOutline, walletOutline });
   }
 
   private getTodayISOString(): string {
@@ -80,7 +81,6 @@ export class AddRecordPage implements OnInit, OnDestroy {
   netProfit = computed(() => (this.dailyEarnings() ?? 0) - this.totalSelectedBoxesExpenses());
 
   allBoxes = signal<Box[]>([]);
-  // Map to store selected boxes and their input values: Map<boxId, { boxName, cantPriceFields, quantity, price, total, note, id?: number }>
   selectedBoxControls = signal<Map<number, { boxName: string, cantPriceFields: boolean, quantity: number | null, price: number | null, total: number | null, note: string | null, id?: number }>>(new Map());
 
   totalSelectedBoxesExpenses = computed(() => {
@@ -155,62 +155,55 @@ export class AddRecordPage implements OnInit, OnDestroy {
           price: boxControl.price ?? null,
           total: boxControl.total ?? null,
           note: boxControl.note ?? null,
-          id: boxControl.id // Store the BoxControl ID
+          id: boxControl.id
         });
       }
     }
     this.selectedBoxControls.set(newSelectedBoxControls);
   }
 
-  async openBoxSelectionActionSheet() {
-    if (this.isEdit()) { // Disable selection in edit mode
-      return;
-    }
+  async openBoxSelectionModal() {
+    if (this.isEdit()) return;
 
-    const availableBoxes = this.allBoxes();
-    if (availableBoxes.length === 0) {
-      return;
-    }
-
-    const buttons = availableBoxes.map(box => ({
-      text: box.name,
-      handler: () => {
-        this.toggleBoxSelection(box);
+    const modal = await this.modalCtrl.create({
+      component: BoxSelectionModalComponent,
+      componentProps: {
+        allBoxes: this.allBoxes(),
+        initialSelectedIds: Array.from(this.selectedBoxControls().keys()),
       },
-      icon: this.selectedBoxControls().has(box.id) ? 'checkmark-circle' : 'ellipse-outline',
-    }));
-
-    buttons.push({
-      text: 'Cerrar',
-      handler: () => { },
-      icon: 'close',
     });
+    await modal.present();
 
-    const actionSheet = await this.actionSheetCtrl.create({
-      header: 'Seleccionar Cajas para Gastos',
-      buttons: buttons,
-    });
-    await actionSheet.present();
-  }
+    const { data, role } = await modal.onWillDismiss<number[]>(); // Explicitly type the data
 
-  toggleBoxSelection(box: Box) {
-    this.selectedBoxControls.update(map => {
-      const newMap = new Map(map);
-      if (newMap.has(box.id)) {
-        newMap.delete(box.id);
+    if (role === 'confirm' && data) {
+      const selectedIds = new Set(data);
+      const currentMap = this.selectedBoxControls();
+      const newMap = new Map(currentMap);
+
+      for (const boxId of currentMap.keys()) {
+        if (!selectedIds.has(boxId)) {
+          newMap.delete(boxId);
+        }
       }
-      else {
-        newMap.set(box.id, {
-          boxName: box.name,
-          cantPriceFields: box.cantPriceFields,
-          quantity: null,
-          price: null,
-          total: null,
-          note: null
-        });
+
+      for (const boxId of selectedIds) {
+        if (!newMap.has(boxId)) {
+          const box = this.allBoxes().find(b => b.id === boxId);
+          if (box) {
+            newMap.set(box.id, {
+              boxName: box.name,
+              cantPriceFields: box.cantPriceFields,
+              quantity: null,
+              price: null,
+              total: null,
+              note: null
+            });
+          }
+        }
       }
-      return newMap;
-    });
+      this.selectedBoxControls.set(newMap);
+    }
   }
 
   handleDynamicInput(boxId: number, field: 'quantity' | 'price' | 'total' | 'note', event: any): void {
@@ -225,7 +218,6 @@ export class AddRecordPage implements OnInit, OnDestroy {
 
           if (control.cantPriceFields && (field === 'quantity' || field === 'price')) {
             control.total = (control.quantity ?? 0) * (control.price ?? 0);
-            control['note'] = `${control.quantity ?? 0} bultos a $${control.price ?? 0}`;
           }
         } else {
           control[field] = value;
@@ -262,10 +254,10 @@ export class AddRecordPage implements OnInit, OnDestroy {
 
         for (const [boxId, controlData] of this.selectedBoxControls().entries()) {
           const boxControl: Partial<BoxControl> = {
-            id: controlData.id, // Use existing ID if available
+            id: controlData.id,
             boxId: boxId,
             date: expenseData.date,
-            origin: 'formulario',
+            origin: controlData.note || 'formulario',
             quantity: controlData.quantity,
             price: controlData.price,
             total: controlData.total ?? 0,
