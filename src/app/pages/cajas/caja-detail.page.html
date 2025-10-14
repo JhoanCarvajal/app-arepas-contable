@@ -4,7 +4,7 @@
       <ion-back-button defaultHref="/tabs/cajas"></ion-back-button>
     </ion-buttons>
     <ion-title>{{ getBoxName() }}</ion-title>
-    <ion-title slot="end">${{ getTotal() | number:'1.0-0' }}</ion-title>
+    <ion-title slot="end">${{ getTotal() | number:'1.0-2' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -38,7 +38,7 @@
             <h3>{{ c.date }} {{ c.createdAt | date:'shortTime' }}</h3>
             <p>Origen: {{ c.origin }}</p>
             @if (c.note) {<p>Nota: {{ c.note }}</p>}
-            <p class="ion-text-wrap">Total: ${{ c.total | number:'1.0-0' }}</p>
+            <p class="ion-text-wrap">Total: ${{ c.total | number:'1.0-2' }}</p>
           </ion-label>
           <ion-button fill="clear" color="danger" slot="end" size="default" (click)="removeControl(c.id)">
             <ion-icon slot="icon-only" name="trash-outline"></ion-icon>

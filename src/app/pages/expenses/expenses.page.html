@@ -18,19 +18,19 @@
             <ion-card-header [ngStyle]="{ 'background-color': item.netProfit >= 0 ? 'var(--ion-color-success-contrast)' : 'var(--ion-color-danger-contrast)' }">            <ion-card-subtitle>{{ item.date }}</ion-card-subtitle>
             <ion-card-title 
               [color]="item.netProfit >= 0 ? 'success' : 'danger'">
-              Beneficio Neto: ${{ item.netProfit | number:'1.2-2' }}
+              Beneficio Neto: ${{ item.netProfit | number:'1.0-2' }}
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ion-item lines="none">
               <ion-icon name="cash-outline" slot="start" color="success"></ion-icon>
               <ion-label>Ganancias</ion-label>
-              <ion-text slot="end" color="medium">${{ item.earnings | number:'1.2-2' }}</ion-text>
+              <ion-text slot="end" color="medium">${{ item.earnings | number:'1.0-2' }}</ion-text>
             </ion-item>
             <ion-item lines="none">
               <ion-icon name="wallet-outline" slot="start" color="danger"></ion-icon>
               <ion-label>Gastos Totales</ion-label>
-              <ion-text slot="end" color="medium">${{ item.totalExpenses | number:'1.2-2' }}</ion-text>
+              <ion-text slot="end" color="medium">${{ item.totalExpenses | number:'1.0-2' }}</ion-text>
             </ion-item>
           </ion-card-content>
 

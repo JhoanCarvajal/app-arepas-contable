@@ -29,8 +29,9 @@ import { BoxesService, Box, BoxControl } from '../../services/boxes.service';
 import { ApiService } from '../../services/api.service';
 import { ExpensesBoxesService } from '../../services/expenses-boxes.service';
 import { addIcons } from 'ionicons';
-import { settingsOutline, cashOutline, walletOutline } from 'ionicons/icons';
-import { BoxSelectionModalComponent } from './box-selection-modal.component'; // Import the modal component
+import { settingsOutline, cashOutline, walletOutline, checkmarkCircle, ellipseOutline, close } from 'ionicons/icons';
+import { BoxSelectionModalComponent } from './box-selection-modal.component';
+import { NumberFormatDirective } from '../../directives/number-format.directive'; // Import the directive
 
 @Component({
   templateUrl: './add-record.page.html',
@@ -53,7 +54,8 @@ import { BoxSelectionModalComponent } from './box-selection-modal.component'; //
     IonListHeader,
     IonDatetimeButton,
     IonModal,
-    IonDatetime
+    IonDatetime,
+    NumberFormatDirective // Add the directive here
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -69,7 +71,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
   private modalCtrl = inject(ModalController); // Use ModalController
 
   constructor() {
-    addIcons({ settingsOutline, cashOutline, walletOutline });
+    addIcons({ settingsOutline, cashOutline, walletOutline, checkmarkCircle, ellipseOutline, close });
   }
 
   private getTodayISOString(): string {
@@ -174,7 +176,7 @@ export class AddRecordPage implements OnInit, OnDestroy {
     });
     await modal.present();
 
-    const { data, role } = await modal.onWillDismiss<number[]>(); // Explicitly type the data
+    const { data, role } = await modal.onWillDismiss<number[]>();
 
     if (role === 'confirm' && data) {
       const selectedIds = new Set(data);

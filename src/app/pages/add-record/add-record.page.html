@@ -24,11 +24,13 @@
       </ion-item>
       <ion-item class="rounded-input">
         <ion-input
+          appNumberFormat
           class="money-input"
           label="Ganancias del Día"
           labelPlacement="stacked"
-          type="number"
-          placeholder="1250.00"
+          type="text"
+          inputmode="decimal"
+          placeholder="1,250.00"
           fill="outline"
           [required]="true"
           (ionInput)="handleInput($event, dailyEarnings)"
@@ -71,7 +73,14 @@
                   <!-- <ion-col size="12" size-sm="5"><ion-label>{{ control.boxName }}</ion-label></ion-col> -->
                   <ion-col size="4" size-sm="3.5">
                     <ion-item class="rounded-small" lines="none">
-                      <ion-input label="{{ control.boxName }}" labelPlacement="stacked" type="number" placeholder="Cant." fill="outline"
+                      <ion-input
+                        appNumberFormat
+                        label="{{ control.boxName }}"
+                        labelPlacement="stacked"
+                        placeholder="Cant."
+                        fill="outline"
+                        type="text"
+                        inputmode="decimal"
                         [value]="control.quantity"
                         (ionInput)="handleDynamicInput(boxId, 'quantity', $event)">
                       </ion-input>
@@ -79,7 +88,11 @@
                   </ion-col>
                   <ion-col size="8" size-sm="3.5">
                     <ion-item class="rounded-small" lines="none">
-                      <ion-input type="number" placeholder="Precio" fill="outline"
+                      <ion-input
+                        appNumberFormat
+                        type="text"
+                        placeholder="Precio"
+                        fill="outline"
                         [value]="control.price"
                         (ionInput)="handleDynamicInput(boxId, 'price', $event)">
                         <div slot="start">$</div>
@@ -90,7 +103,13 @@
               </ion-grid>
             </ng-container>
             <ng-template #totalOnly>
-              <ion-input label="{{ control.boxName }}" labelPlacement="stacked" type="number" placeholder="Total" fill="outline"
+              <ion-input
+                appNumberFormat
+                label="{{ control.boxName }}"
+                labelPlacement="stacked"
+                type="text"
+                placeholder="Total"
+                fill="outline"
                 [value]="control.total"
                 (ionInput)="handleDynamicInput(boxId, 'total', $event)">
                 <div slot="start">$</div>
@@ -112,13 +131,13 @@
             <ion-item lines="none">
                 <ion-label>Total de Egresos:</ion-label>
                 <ion-text color="danger" slot="end">
-                    <h2 class="ion-no-margin">${{ totalSelectedBoxesExpenses() | number:'1.0-0' }}</h2>
+                    <h2 class="ion-no-margin">${{ totalSelectedBoxesExpenses() | number:'1.0-2' }}</h2>
                 </ion-text>
             </ion-item>
             <ion-item lines="none">
                 <ion-label><strong>Beneficio Neto:</strong></ion-label>
                 <ion-text [color]="netProfit() >= 0 ? 'success' : 'danger'" slot="end">
-                    <h2 class="ion-no-margin">${{ netProfit() | number:'1.0-0' }}</h2>
+                    <h2 class="ion-no-margin">${{ netProfit() | number:'1.0-2' }}</h2>
                 </ion-text>
             </ion-item>
         </ion-card-content>

@@ -20,12 +20,12 @@
     <ng-container *ngIf="cantPriceFields; else noExtra">
       <ion-item>
         <ion-label position="stacked">Cantidad (opcional)</ion-label>
-        <ion-input type="number" [value]="quantity()" (ionInput)="changeQuantity($event)" placeholder="Cantidad"></ion-input>
+        <ion-input appNumberFormat type="text" inputmode="decimal" [value]="quantity()" (ionInput)="changeQuantity($event)" placeholder="Cantidad"></ion-input>
       </ion-item>
 
       <ion-item>
         <ion-label position="stacked">Precio unitario (opcional)</ion-label>
-        <ion-input type="number" [value]="price()" (ionInput)="changePrice($event)" placeholder="Precio"></ion-input>
+        <ion-input appNumberFormat type="text" inputmode="decimal" [value]="price()" (ionInput)="changePrice($event)" placeholder="Precio"><div slot="start">$</div></ion-input>
       </ion-item>
     </ng-container>
 
@@ -38,14 +38,17 @@
     </ng-template>
 
     <ion-item>
-      <ion-label position="stacked">Total</ion-label>
-      <ion-input
-        type="number"
-        [value]="total()"
-        (ionInput)="changeTotal($event)"
-        [disabled]="cantPriceFields"
-        placeholder="Total">
-      </ion-input>
+        <ion-label position="stacked">Total</ion-label>
+        <ion-input
+          appNumberFormat
+          type="text"
+          inputmode="decimal"
+          [value]="cantPriceFields ? (total() | number:'1.0-2') : total()"
+          (ionInput)="changeTotal($event)"
+          [disabled]="cantPriceFields"
+          placeholder="Total">
+          <div slot="start">$</div>
+        </ion-input>
     </ion-item>
 
     <ion-item>
