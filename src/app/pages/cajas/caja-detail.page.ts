@@ -71,7 +71,7 @@ export class CajaDetailPage implements AfterViewInit {
   series = computed(() => {
     const b = this.box();
     if (!b) return [] as BoxControl[];
-    return [...b.controls].sort((a, z) => new Date(a.createdAt).getTime() - new Date(z.createdAt).getTime());
+    return [...b.controls].sort((a, z) => new Date(a.createdAt).getTime() - new Date(z.createdAt).getTime()).filter(c => !c.deletedAt);
   });
 
   constructor() {

@@ -14,6 +14,7 @@ export interface BoxControl {
   note?: string | null;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string | null;
 }
 
 export interface Box {
