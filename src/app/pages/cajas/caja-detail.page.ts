@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, DatePipe } from '@angular/common';
 // import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import Chart from 'chart.js/auto';
@@ -33,6 +33,7 @@ import { trashOutline } from 'ionicons/icons';
   standalone: true,
   imports: [
     DecimalPipe,
+    DatePipe,
     RouterModule,
     IonHeader,
     IonToolbar,

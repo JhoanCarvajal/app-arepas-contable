@@ -35,7 +35,7 @@
     @for (c of series(); track $index) {
         <ion-item lines="full">
           <ion-label>
-            <h3>{{ c.date }}</h3>
+            <h3>{{ c.date }} {{ c.createdAt | date:'shortTime' }}</h3>
             <p>Origen: {{ c.origin }}</p>
             @if (c.note) {<p>Nota: {{ c.note }}</p>}
             <p class="ion-text-wrap">Total: ${{ c.total | number:'1.0-0' }}</p>
