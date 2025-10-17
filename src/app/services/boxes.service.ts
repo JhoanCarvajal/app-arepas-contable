@@ -144,7 +144,9 @@ export class BoxesService {
 
     box.controls[controlIdx] = { ...updatedControl };
     // box.total = (box.total ?? 0) + (updatedControl.total ?? 0);
-    box.total = box.controls.reduce((sum, ctrl) => sum + (ctrl.total ?? 0), 0);
+    // solo la suma de los controles que no tienen deletedAt
+    const noDeletedControls = box.controls.filter(c => !c.deletedAt);
+    box.total = noDeletedControls.reduce((sum, ctrl) => sum + (ctrl.total ?? 0), 0);
     this.updateBox(box); // This will also save to local storage and attempt API update for the box
 
     if (await this.apiService.isOnlineAndApiAvailable()) {
