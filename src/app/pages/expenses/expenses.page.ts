@@ -21,13 +21,14 @@ import {
   AlertController // Import AlertController
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { cashOutline, walletOutline } from 'ionicons/icons';
+import { pencilOutline, trashOutline } from 'ionicons/icons';
 import { ExpensesService, Expense } from '../../services/expenses.service';
 import { BoxesService } from '../../services/boxes.service';
 import { ExpensesBoxesService } from '../../services/expenses-boxes.service'; // Import ExpensesBoxesService
 
 @Component({
   templateUrl: './expenses.page.html',
+  styleUrls: ['./expenses.page.scss'],
   imports: [
     CommonModule,
     RouterLink,
@@ -60,7 +61,7 @@ export class ExpensesPage implements OnInit {
   constructor(
     private toastController: ToastController
   ) {
-    addIcons({ cashOutline, walletOutline });
+    addIcons({ pencilOutline, trashOutline });
   }
 
   ngOnInit() {

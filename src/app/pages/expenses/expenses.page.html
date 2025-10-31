@@ -15,41 +15,35 @@
     <ion-list>
       @for (item of expenses(); track $index) {
         <ion-card class="ion-margin-vertical">
-            <ion-card-header [ngStyle]="{ 'background-color': item.netProfit >= 0 ? 'var(--ion-color-success-contrast)' : 'var(--ion-color-danger-contrast)' }">            <ion-card-subtitle>{{ item.date }}</ion-card-subtitle>
-            <ion-card-title 
-              [color]="item.netProfit >= 0 ? 'success' : 'danger'">
-              Beneficio Neto: ${{ item.netProfit | number:'1.0-2' }}
-            </ion-card-title>
+            <ion-card-header>
+              <ion-card-subtitle color="dark" class="ion-display-flex ion-justify-content-between ion-align-items-center">
+                <ion-text>{{ item.date }}</ion-text>
+                <ion-item lines="none" class="ion-no-padding">
+                  <ion-button
+                    fill="outline"
+                    size="small"
+                    class="padding-8-end"
+                    [routerLink]="['/tabs/add']"
+                    [queryParams]="{ id: item.id }">
+                    <ion-icon name="pencil-outline" color="primary"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="outline"
+                    size="small"
+                    color="danger"
+                    (click)="deleteExpense(item)">
+                    <ion-icon name="trash-outline" color="danger"></ion-icon>
+                  </ion-button>
+                </ion-item>
+              </ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
-            <ion-item lines="none">
-              <ion-icon name="cash-outline" slot="start" color="success"></ion-icon>
-              <ion-label>Ganancias</ion-label>
-              <ion-text slot="end" color="medium">${{ item.earnings | number:'1.0-2' }}</ion-text>
+            <ion-item lines="none" class="ion-no-padding">
+              <ion-text class="padding-8-end money-text" color="success">${{ item.earnings | number:'1.0-2' }}</ion-text>
+              <ion-text class="padding-8-end money-text" color="danger">-${{ item.totalExpenses | number:'1.0-2' }}</ion-text>
+              <ion-text class="padding-8-end money-text" color="dark"> = </ion-text>
+              <ion-text class="padding-8-end profit-text" [color]="item.netProfit >= 0 ? 'success' : 'danger'">${{ item.netProfit | number:'1.0-2' }}</ion-text>
             </ion-item>
-            <ion-item lines="none">
-              <ion-icon name="wallet-outline" slot="start" color="danger"></ion-icon>
-              <ion-label>Gastos Totales</ion-label>
-              <ion-text slot="end" color="medium">${{ item.totalExpenses | number:'1.0-2' }}</ion-text>
-            </ion-item>
-          </ion-card-content>
-
-          <!-- Nuevo: botón Editar que envía el id por queryParams -->
-          <ion-card-content class="ion-padding-horizontal">
-            <ion-button
-              fill="outline"
-              size="small"
-              [routerLink]="['/tabs/add']"
-              [queryParams]="{ id: item.id }">
-              Editar
-            </ion-button>
-            <ion-button
-              fill="outline"
-              size="small"
-              color="danger"
-              (click)="deleteExpense(item)">
-              Eliminar
-            </ion-button>
           </ion-card-content>
         </ion-card>
       }
