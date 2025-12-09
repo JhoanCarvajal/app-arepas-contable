@@ -26,6 +26,9 @@ const config: CapacitorConfig = {
       backgroundColor: "#4318d0ff",
     },
   },
+  android: {
+    adjustMarginsForEdgeToEdge: 'auto',
+  },
 };
 
 export default config;
