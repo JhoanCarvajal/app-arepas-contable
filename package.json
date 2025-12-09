@@ -29,10 +29,10 @@
     "@capacitor/network": "^7.0.2",
     "@capacitor/splash-screen": "^7.0.3",
     "@capacitor/status-bar": "^7.0.2",
-    "@ionic/angular": "^8.0.0",
+    "@ionic/angular": "^8.7.11",
     "@ionic/storage-angular": "^4.0.0",
     "chart.js": "^4.5.0",
-    "ionicons": "^7.0.0",
+    "ionicons": "^8.0.13",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
